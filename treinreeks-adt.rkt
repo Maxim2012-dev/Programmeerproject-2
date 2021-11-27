@@ -1,5 +1,7 @@
 #lang racket
 
+
+(require rnrs/mutable-pairs-6)
 (require "simulator/interface.rkt")
 
 ; abstractie voor de verzameling van aanwezige treinen
@@ -20,7 +22,7 @@
     (define (verwijder-trein! trein)
       (let ((trein-id (trein 'trein-id)))
         (define (iter reeks)
-          (if (not (null? (cdr reeks)))
+          (when (not (null? (cdr reeks)))
               (cond ((eq? trein (cadr reeks))
                      (set-cdr! reeks (cddr reeks)))
                     (else (iter (cdr reeks))))))
@@ -35,7 +37,7 @@
     ; snelheid van trein met id wijzigen
     (define (wijzig-snelheid-trein! id snelheid)
       (define (iter reeks)
-          (if (not (null? (cdr reeks)))
+          (when (not (null? (cdr reeks)))
               (cond ((eq? id ((cadr reeks) 'trein-id))
                      (((cadr reeks) 'verander-snelheid!) snelheid)) 
                     (else (iter (cdr reeks))))))
