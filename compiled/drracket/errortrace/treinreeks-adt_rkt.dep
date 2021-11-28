@@ -1,0 +1,1 @@
+("7.8" racket ("36aa1e69e043f89a90c3f4b35e62afdd593bf2ac" . "f7482d31ac494a2de10c0b255d8192f62f96e227") #"C:\\Users\\Carl\\Documents\\GitHub\\Programmeerproject-2\\simulator\\interface.rkt" (collects #"errortrace" #"errortrace-key.rkt") (collects #"racket" #"main.rkt") (collects #"racket" #"runtime-config.rkt") (collects #"rnrs" #"mutable-pairs-6.rkt"))

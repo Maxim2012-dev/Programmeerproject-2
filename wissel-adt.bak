@@ -1,0 +1,24 @@
+#lang racket
+
+(require "simulator/interface.rkt")
+
+(define (maak-switch id init-pos)
+  (let ((switch-id id)
+        (stand init-pos))   ; stand 1 of 2
+
+
+    ; stand van huidige switch opvragen
+    (define (huidige-stand)
+      (get-switch-position switch-id))
+
+    ; stand van huidige switch veranderen
+    (define (verander-stand! nieuwe-stand)
+      (set! stand nieuwe-stand)
+      (set-switch-position switch-id nieuwe-stand))
+
+    ; dispatch-procedure
+    (define (dispatch-switch msg)
+      (cond ((eq? msg 'huidige-stand) (huidige-stand))
+            ((eq? msg 'verander-stand!) verander-stand!)
+            (else (display "foute boodschap - switch-adt"))))
+    dispatch-switch))
