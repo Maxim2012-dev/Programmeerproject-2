@@ -5,6 +5,7 @@
 (define (maak-spoornetwerk)
   (let ((wissel-ids (get-switch-ids))
         (wissels '()) ; effectieve wissels om stand te manipuleren
+        (aanwezige-treinen '())
         (detectieblok-ids (get-detection-block-ids)))
 
 
@@ -12,6 +13,10 @@
     ; (manueel wissels aanmaken)
     (define (voeg-wissel-toe! wissel)
       (set! wissels (cons wissel wissels)))
+
+    ; reeks van treinen die op het spoor staan toevoegen
+    (define (voeg-rijdende-treinen-toe! reeks)
+      (set! aanwezige-treinen (cons reeks aanwezige-treinen)))
 
     ; positie van switch met id wijzigen
     (define (wijzig-stand-switch! id stand)
@@ -22,6 +27,7 @@
                     (else (iter (cdr wissels))))))
       (iter wissels))
 
+    ; dispatch-procedure
     (define (dispatch-spoornetwerk msg)
       (cond ((eq? msg 'wissel-ids) wissel-ids)
             ((eq? msg 'wissels) wissels)

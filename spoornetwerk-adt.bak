@@ -1,4 +1,0 @@
-#lang racket
-
-(require "simulator/interface.rkt")
-

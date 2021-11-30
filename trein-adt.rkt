@@ -17,14 +17,15 @@
 
     ; verander snelheid van huidige trein
     (define (verander-snelheid! nieuwe-snelheid)
-      (set! snelheid nieuwe-snelheid))
+      (set! snelheid nieuwe-snelheid)
+      (set-loco-speed! trein-id nieuwe-snelheid))
 
     ; dispatch-procedure
     (define (dispatch-trein msg)
       (cond ((eq? msg 'trein-id) trein-id)
             ((eq? msg 'richting) prev-seg)
             ((eq? msg 'startsegment) startsegment)
-            ((eq? msg 'huidige-snelheid) snelheid)
+            ((eq? msg 'huidige-snelheid) huidige-snelheid)
             ((eq? msg 'verander-snelheid!) verander-snelheid!)
             (else (display "foute boodschap - trein-adt"))))
     dispatch-trein))
