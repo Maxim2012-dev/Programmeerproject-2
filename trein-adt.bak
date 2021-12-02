@@ -13,7 +13,7 @@
 
     ; snelheid van huidige trein
     (define (huidige-snelheid)
-      (get-loco-speed trein-id))
+      snelheid)
 
     ; verander snelheid van huidige trein
     (define (verander-snelheid! nieuwe-snelheid)
