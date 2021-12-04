@@ -20,13 +20,17 @@
 
 
     (define (zet-trein-op-spoor id richting segment)
-      (let ((nieuwe-trein (maak-trein id richting segment)))
+      (let ((id-symbol (string->symbol id))
+            (richting-symbol (string->symbol richting))
+            (segment-symbol (string->symbol segment)))
         (when spoor
-            ((spoor 'voeg-nieuwe-trein-toe!) nieuwe-trein))))
+          ((spoor 'voeg-nieuwe-trein-toe!)
+           (maak-trein id-symbol richting-symbol segment-symbol)))))
 
 
     (define (dispatch-programma msg)
       (cond ((eq? msg 'start-programma) start-programma)
+            ((eq? msg 'zet-trein-op-spoor) zet-trein-op-spoor)
             (else (display "foute boodschap - INFRABEL"))))
     dispatch-programma))
 
