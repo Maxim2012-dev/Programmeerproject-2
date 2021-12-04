@@ -18,7 +18,7 @@
       (set! wissels (cons wissel wissels)))
 
     ; reeks van treinen die op het spoor staan toevoegen
-    (define (voeg-rijdende-trein-toe! trein)
+    (define (voeg-nieuwe-trein-toe! trein)
       ((aanwezige-treinen 'voeg-trein-toe!) trein))
 
     ; positie van switch met id wijzigen
@@ -36,6 +36,7 @@
             ((eq? msg 'wissels) wissels)
             ((eq? msg 'detectieblok-ids) detectieblok-ids)
             ((eq? msg 'voeg-wissel-toe!) voeg-wissel-toe!)
+            ((eq? msg 'voeg-nieuwe-trein-toe!) voeg-nieuwe-trein-toe!)
             ((eq? msg 'wijzig-stand-switch!) wijzig-stand-switch!)
             (else (display "foute boodschap - spoornetwerk-adt"))))
     dispatch-spoornetwerk))

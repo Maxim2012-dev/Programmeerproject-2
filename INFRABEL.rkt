@@ -10,31 +10,23 @@
 
 
 (define (maak-programma)
-  (let ((spoor (maak-spoornetwerk)))
+  (let ((spoor #f))
 
 
-    (define (start-programma-straight)
-      (setup-straight)
+    (define (start-programma setup-functie)
+      (setup-functie)
+      (set! spoor (maak-spoornetwerk))
       (start))
 
-    (define (start-programma-loop)
-      (setup-loop)
-      (start))
 
-    (define (start-programma-loop-and-switches)
-      (setup-loop-and-switches)
-      (start))
-
-    (define (start-programma-straight-with-switch)
-      (setup-straight-with-switch)
-      (start))
+    (define (zet-trein-op-spoor id richting segment)
+      (let ((nieuwe-trein (maak-trein id richting segment)))
+        (when spoor
+            ((spoor 'voeg-nieuwe-trein-toe!) nieuwe-trein))))
 
 
     (define (dispatch-programma msg)
-      (cond ((eq? msg 'start-programma-straight) start-programma-straight)
-            ((eq? msg 'start-programma-loop) start-programma-loop)
-            ((eq? msg 'start-programma-loop-and-switches) start-programma-loop-and-switches)
-            ((eq? msg 'start-programma-straight-with-switch) start-programma-straight-with-switch)
+      (cond ((eq? msg 'start-programma) start-programma)
             (else (display "foute boodschap - INFRABEL"))))
     dispatch-programma))
 
