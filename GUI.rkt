@@ -53,10 +53,9 @@
                        [parent tab-panel]
                        [style (list 'border)]))
 
-; Voegt een nieuwe child toe aan een bepaalde panel
 (define (add-to-trains-panel)
   (define panel (new horizontal-panel% [parent trains-panel]
-                     [alignment '(center center)]))
+                     [alignment '(center top)]))
   (new message%
        [label ADDED_TRAIN_TO_TRACK]
        [parent panel])
@@ -95,6 +94,9 @@
 ; ======================= TREINEN TOEVOEGEN =======================
 
 (define (onClickConfirm id direction segment)
+  (new message%
+       [label ADDED_TRAIN_TO_TRACK]
+       [parent log-panel])
   ((infrabel 'zet-trein-op-spoor) id direction segment))
 
 (define (onClickAddTrain btn event)
