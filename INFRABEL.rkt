@@ -14,13 +14,13 @@
   (let ((spoor #f))
 
 
-    (define (start-programma setup-functie)
+    (define (start-programma! setup-functie)
       (setup-functie)
       (set! spoor (maak-spoornetwerk))
       (start))
 
 
-    (define (zet-trein-op-spoor id richting segment)
+    (define (zet-trein-op-spoor! id richting segment)
       (let ((id-symbol (string->symbol id))
             (richting-symbol (string->symbol richting))
             (segment-symbol (string->symbol segment)))
@@ -54,8 +54,8 @@
       (spoor 'detectieblok-ids))
 
     (define (dispatch-programma msg)
-      (cond ((eq? msg 'start-programma) start-programma)
-            ((eq? msg 'zet-trein-op-spoor) zet-trein-op-spoor)
+      (cond ((eq? msg 'start-programma) start-programma!)
+            ((eq? msg 'zet-trein-op-spoor) zet-trein-op-spoor!)
             ((eq? msg 'verhoog-snelheid-trein!) verhoog-snelheid-trein!)
             ((eq? msg 'verlaag-snelheid-trein!) verlaag-snelheid-trein!)
             ((eq? msg 'geef-snelheid-trein) geef-snelheid-trein)

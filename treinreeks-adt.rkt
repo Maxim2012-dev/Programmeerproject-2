@@ -46,8 +46,8 @@
       (set-loco-speed! id snelheid))
 
     ; detectieblok van trein met id
-    (define (detectieblok-trein id)
-      (get-loco-detection-block id))
+    (define (detectieblok-trein trein-id)
+      (get-loco-detection-block trein-id))
 
     
     ; dispatch-procedure
