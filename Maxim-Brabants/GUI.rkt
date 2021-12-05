@@ -77,7 +77,8 @@
 
 ; Nieuwe trein aan Treinoverzicht toevoegen
 (define (add-to-trains-panel train-id)
-  (define panel (new horizontal-panel% [parent trains-panel]))
+  (define panel (new horizontal-panel% [parent trains-panel]
+                     [alignment '(center top)]))
   (new message% 
        [label (string-append TRAIN_ID_LABEL train-id)]
        [parent panel])
