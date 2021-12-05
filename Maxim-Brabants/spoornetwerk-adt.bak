@@ -23,12 +23,12 @@
 
     ; positie van switch met id wijzigen
     (define (wijzig-stand-switch! id stand)
-      (define (iter ids)
-          (when (not (null? (cdr ids)))
-              (cond ((eq? id (car ids))
-                     (set-switch-position! id stand))
-                    (else (iter (cdr ids))))))
-      (iter wissel-ids))
+      (define (iter wissels)
+          (when (not (null? (cdr wissels)))
+              (cond ((eq? id ((cadr wissels) 'wissel-id))
+                     (((cadr wissels) 'verander-stand!) stand)) 
+                    (else (iter (cdr wissels))))))
+      (iter wissels))
 
     ; dispatch-procedure
     (define (dispatch-spoornetwerk msg)

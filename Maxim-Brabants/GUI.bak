@@ -17,7 +17,6 @@
 (define ADDED_TRAIN_TO_TRACK "Nieuwe trein toegevoegd aan spoor")
 (define SPEED_TRAIN_INCREASED "Snelheid verhoogd van trein met ID: ")
 (define SPEED_TRAIN_DECREASED "Snelheid verlaagd van trein met ID: ")
-(define SWITCH_CHANGED " veranderd naar stand: ")
 (define INCREASE_SPEED "+ Snelheid")
 (define DECREASE_SPEED "- Snelheid")
 
@@ -102,22 +101,6 @@
                    (send speed set-label (number->string ((infrabel 'geef-snelheid-trein) train-id))))]))
 
 
-; Wanneer op een radiobutton wordt geklikt
-(define (onRadioClick radiobtn event switch-id)
-  (let ((selection (send radiobtn get-selection))
-        (switch-id-symbol (symbol->string switch-id)))
-    (when selection
-      (cond ((= selection 0)
-             ((infrabel 'verander-wisselstand!) switch-id-symbol 1)
-             (new message%
-                  [label (string-append SWITCH_ID_LABEL switch-id-symbol SWITCH_CHANGED (send radiobtn get-item-label 0))]
-                  [parent log-panel]))
-            ((= selection 1)
-             ((infrabel 'verander-wisselstand!) switch-id-symbol 2)
-             (new message%
-                  [label (string-append SWITCH_ID_LABEL switch-id-symbol SWITCH_CHANGED (send radiobtn get-item-label 1))]
-                  [parent log-panel]))))))
-
 ; Het panel met de wissels vullen
 (define (fill-switches-panel)
   (let ((switch-ids ((infrabel 'geef-wissel-ids))))
@@ -126,11 +109,8 @@
         (define panel (new horizontal-panel% [parent switches-panel]
                            [alignment '(center top)]))
         (new message% 
-             [label (string-append SWITCH_ID_LABEL (symbol->string (car ids)) "\t")]
+             [label (string-append SWITCH_ID_LABEL (symbol->string (car ids)))]
              [parent panel])
-        (new radio-box% [label "stand: "][choices (list "1" "2")][parent panel]
-             [style (list 'horizontal)]
-             [callback (lambda (r e) (onRadioClick r e (car ids)))])
         (iter (cdr ids))))
     (iter switch-ids)))
 
@@ -226,7 +206,7 @@
 ;; ===============================================================
 
 (define infrabel (maak-programma))
-((infrabel 'start-programma) setup-loop-and-switches)
+((infrabel 'start-programma) setup-loop)
 
 (send window show #t)
 (fill-tab-content tab-panel)
