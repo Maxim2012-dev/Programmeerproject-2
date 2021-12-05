@@ -34,7 +34,6 @@
     (define (dispatch-spoornetwerk msg)
       (cond ((eq? msg 'wissel-ids) wissel-ids)
             ((eq? msg 'wissels) wissels)
-            ((eq? msg 'aanwezige-treinen) aanwezige-treinen)
             ((eq? msg 'detectieblok-ids) detectieblok-ids)
             ((eq? msg 'voeg-wissel-toe!) voeg-wissel-toe!)
             ((eq? msg 'voeg-nieuwe-trein-toe!) voeg-nieuwe-trein-toe!)

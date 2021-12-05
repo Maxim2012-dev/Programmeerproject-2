@@ -4,10 +4,21 @@
 (require "simulator/interface.rkt")
 (require "INFRABEL.rkt")
 
-(define RAIL_NETWORK_TAB_LABEL "Info spoornetwerk:")
+;; ======================= STRING CONSTANTS =======================
+
+(define TRAINS_VIEW "Treinoverzicht")
+(define SWITCHES_VIEW "Wisselsoverzicht")
+(define DETECTION_BLOCKS_VIEW "Detectieblokkenoverzicht")
+(define TRAIN_ID_LABEL "Trein met ID:   ")
+(define SWITCH_ID_LABEL "Switch met ID:   ")
+(define DETECTION_BLOCK_ID_LABEL "Detectieblok met ID:   ")
 (define ADD_TRAIN_LABEL "Voeg trein toe")
 (define NEW_TRAIN_TITLE "Nieuwe trein")
 (define ADDED_TRAIN_TO_TRACK "Nieuwe trein toegevoegd aan spoor")
+(define SPEED_TRAIN_INCREASED "Snelheid verhoogd van trein met ID: ")
+(define SPEED_TRAIN_DECREASED "Snelheid verlaagd van trein met ID: ")
+(define INCREASE_SPEED "+ Snelheid")
+(define DECREASE_SPEED "- Snelheid")
 
 
 
@@ -28,7 +39,7 @@
         (cond ((eq? current-tab-name "Functionaliteit")
                tab-functionaliteit)
               ((eq? current-tab-name "Overzicht")
-               tab-spoornetwerk)
+               tab-overzicht)
               ((eq? current-tab-name "Logboek")
                tab-logboek)
               (else (display "error - tab doesn't exist")))))
@@ -48,22 +59,72 @@
                           [parent tab-panel]	 
                           [style (list 'border)]))
 
+; Panel om wissels met hun stand in weer te geven
+(define switches-panel (new vertical-panel%	 
+                            [parent tab-panel]	 
+                            [style (list 'border)]))
+
+; Panel om detectieblokken met hun status in weer te geven
+(define detection-blocks-panel (new vertical-panel%	 
+                                    [parent tab-panel]	 
+                                    [style (list 'border)]))
+
 ; Panel om gebeurtenissen in te loggen
 (define log-panel (new vertical-panel%
                        [parent tab-panel]
                        [style (list 'border)]))
 
-(define (add-to-trains-panel)
-  (define panel (new horizontal-panel% [parent trains-panel]
-                     [alignment '(center top)]))
-  (new message%
-       [label ADDED_TRAIN_TO_TRACK]
-       [parent panel])
-  (new button% [parent panel] [label "+ Snelheid"]
-       [callback (lambda (b e) (display "+"))])
-  (new button% [parent panel] [label "- Snelheid"]
-       [callback (lambda (b e)(display "-"))]))
 
+; Nieuwe trein aan Treinoverzicht toevoegen
+(define (add-to-trains-panel train-id)
+  (define panel (new horizontal-panel% [parent trains-panel]))
+  (new message% 
+       [label (string-append TRAIN_ID_LABEL train-id)]
+       [parent panel])
+  (new button% [parent panel] [label INCREASE_SPEED]
+       [callback (lambda (b e)(new message%
+                                   [label (string-append SPEED_TRAIN_INCREASED train-id)]
+                                   [parent log-panel])
+                   ((infrabel 'verhoog-snelheid-trein!) train-id)
+                   (send speed set-label (number->string ((infrabel 'geef-snelheid-trein) train-id))))])
+  (define speed (new message%
+                     [label (number->string ((infrabel 'geef-snelheid-trein) train-id))]
+                     [parent panel]
+                     [horiz-margin 50]
+                     [auto-resize #t]))
+  (new button% [parent panel] [label DECREASE_SPEED]
+       [callback (lambda (b e)(new message%
+                                   [label (string-append SPEED_TRAIN_DECREASED train-id)]
+                                   [parent log-panel])
+                   ((infrabel 'verlaag-snelheid-trein!) train-id)
+                   (send speed set-label (number->string ((infrabel 'geef-snelheid-trein) train-id))))]))
+
+
+; Het panel met de wissels vullen
+(define (fill-switches-panel)
+  (let ((switch-ids ((infrabel 'geef-wissel-ids))))
+    (define (iter ids)
+      (when (not (null? ids))
+        (define panel (new horizontal-panel% [parent switches-panel]
+                           [alignment '(center top)]))
+        (new message% 
+             [label (string-append SWITCH_ID_LABEL (symbol->string (car ids)))]
+             [parent panel])
+        (iter (cdr ids))))
+    (iter switch-ids)))
+
+; Het panel met de detectieblokken vullen
+(define (fill-detection-blocks-panel)
+  (let ((detection-block-ids ((infrabel 'geef-detectieblok-ids))))
+    (define (iter ids)
+      (when (not (null? ids))
+        (define panel (new horizontal-panel% [parent detection-blocks-panel]
+                           [alignment '(center top)]))
+        (new message% 
+             [label (string-append DETECTION_BLOCK_ID_LABEL (symbol->string (car ids)))]
+             [parent panel])
+        (iter (cdr ids))))
+    (iter detection-block-ids)))
 
 ; ======================= DIALOG - NIEUWE TREIN =======================
 
@@ -87,7 +148,7 @@
      [callback (lambda (b e)(onClickConfirm (send id get-value)
                                             (send direction get-value)
                                             (send segment get-value))
-                 (add-to-trains-panel)
+                 (add-to-trains-panel (send id get-value))
                  (send new-train-dialog show #f))])
 
 
@@ -115,13 +176,23 @@
         [callback onClickAddTrain])))
 
 ; Layout voor het tablad 'Spoornetwerk'
-(define (tab-spoornetwerk children-areas)
+(define (tab-overzicht children-areas)
   (list
    (new message%
-        [label RAIL_NETWORK_TAB_LABEL]
+        [label TRAINS_VIEW]
         [parent tab-panel]
         [vert-margin 20])
-   trains-panel))
+   trains-panel
+   (new message%
+        [label SWITCHES_VIEW]
+        [parent tab-panel]
+        [vert-margin 20])
+   switches-panel
+   (new message%
+        [label DETECTION_BLOCKS_VIEW]
+        [parent tab-panel]
+        [vert-margin 20])
+   detection-blocks-panel))
 
 ; Layout voor het tablad 'Logboek'
 (define (tab-logboek children-areas)
@@ -138,4 +209,6 @@
 
 (send window show #t)
 (fill-tab-content tab-panel)
+(fill-switches-panel)
+(fill-detection-blocks-panel)
 

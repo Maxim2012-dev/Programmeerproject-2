@@ -15,6 +15,7 @@
       (let ((id (trein 'trein-id))
             (prev-seg (trein 'richting))
             (cur-seg (trein 'startsegment)))
+        (display id)(newline)(display prev-seg)(newline)(display cur-seg)(newline)
         (set! reeks (cons trein reeks))
         (add-loco id prev-seg cur-seg)))
 
