@@ -1,1 +1,0 @@
-("7.8" racket ("4bbb0a3eae9baa83f4c86ebd8c3fdc7e2f6a96fe" . "337174a720ebf3a3e5d5ea299b727f42dac60039") #"C:\\Users\\Maxim\\OneDrive\\Documenten\\GitHub\\Programmeerproject-2\\Maxim-Brabants\\simulator\\interface.rkt" (collects #"errortrace" #"errortrace-key.rkt") (collects #"racket" #"main.rkt") (collects #"racket" #"runtime-config.rkt"))
