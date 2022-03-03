@@ -2,7 +2,7 @@
 
 (require racket/gui/base)
 (require "simulator/interface.rkt")
-(require "INFRABEL/INFRABEL.rkt")
+(require "INFRABEL.rkt")
 
 ;; ======================= STRING CONSTANTS =======================
 

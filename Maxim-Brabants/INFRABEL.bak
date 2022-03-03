@@ -1,6 +1,6 @@
 #lang racket
 
-(require "../simulator/interface.rkt")
+(require "C:/Users/Maxim/Documents/GitHub/Programmeerproject-2/Maxim-Brabants/simulator/interface.rkt")
 (require "trein-adt.rkt")
 (require "treinreeks-adt.rkt")
 (require "wissel-adt.rkt")
