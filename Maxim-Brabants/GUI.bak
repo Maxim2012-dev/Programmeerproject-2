@@ -3,7 +3,6 @@
 (require racket/gui/base)
 (require "simulator/interface.rkt")
 (require "INFRABEL/INFRABEL.rkt")
-(require "NMBS/NMBS.rkt")
 
 ;; ======================= STRING CONSTANTS =======================
 
@@ -88,7 +87,7 @@
        [callback (lambda (b e)(new message%
                                    [label (string-append SPEED_TRAIN_INCREASED train-id)]
                                    [parent log-panel])
-                   ((0infrabel 'verhoog-snelheid-trein!) train-id)
+                   ((infrabel 'verhoog-snelheid-trein!) train-id)
                    (send speed set-label (number->string ((infrabel 'geef-snelheid-trein) train-id))))])
   (define speed (new message%
                      [label (number->string ((infrabel 'geef-snelheid-trein) train-id))]
@@ -228,7 +227,7 @@
 (setup-loop-and-switches)
 (start)
 
-(define nmbs (maak-nmbs))
+
 
 (send window show #t)
 (fill-tab-content tab-panel)

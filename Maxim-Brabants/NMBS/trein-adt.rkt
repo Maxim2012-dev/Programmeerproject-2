@@ -1,6 +1,6 @@
 #lang racket
 
-(require "simulator/interface.rkt")
+(require "../simulator/interface.rkt")
 (provide maak-trein)
 
 ; We stellen een trein voor door een abstractie ervan te maken.

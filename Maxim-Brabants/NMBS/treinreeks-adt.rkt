@@ -2,7 +2,7 @@
 
 
 (require rnrs/mutable-pairs-6)
-(require "simulator/interface.rkt")
+(require "../simulator/interface.rkt")
 (provide maak-treinreeks)
 
 ; abstractie voor de verzameling van aanwezige treinen

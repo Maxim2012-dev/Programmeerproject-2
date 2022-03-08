@@ -1,6 +1,6 @@
 #lang racket
 
-(require "simulator/interface.rkt")
+(require "../simulator/interface.rkt")
 
 (define (maak-wissel id init-pos)
   (let ((wissel-id id)

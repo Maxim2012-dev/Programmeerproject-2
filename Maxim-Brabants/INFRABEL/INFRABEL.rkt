@@ -6,20 +6,14 @@
 (require "wissel-adt.rkt")
 (require "spoornetwerk-adt.rkt")
 
-(provide maak-programma)
-
 (define SNELHEIDSVERANDERING 20)
 
-(define (maak-programma)
-  (let ((spoor #f))
+;; Moet achteraf permanent kunnen draaien
+(define (maak-infrabel)
+  (let ((spoor (maak-spoornetwerk)))
 
 
-    (define (start-programma! setup-functie)
-      (setup-functie)
-      (set! spoor (maak-spoornetwerk))
-      (start))
-
-
+    ;; (functionaliteit voor de simulator)
     (define (zet-trein-op-spoor! id richting segment)
       (let ((id-symbol (string->symbol id))
             (richting-symbol (string->symbol richting))
@@ -57,8 +51,7 @@
       ((spoor 'wijzig-stand-switch!) id stand))
 
     (define (dispatch-programma msg)
-      (cond ((eq? msg 'start-programma) start-programma!)
-            ((eq? msg 'zet-trein-op-spoor) zet-trein-op-spoor!)
+      (cond ((eq? msg 'zet-trein-op-spoor) zet-trein-op-spoor!)
             ((eq? msg 'verhoog-snelheid-trein!) verhoog-snelheid-trein!)
             ((eq? msg 'verlaag-snelheid-trein!) verlaag-snelheid-trein!)
             ((eq? msg 'geef-snelheid-trein) geef-snelheid-trein)
