@@ -42,6 +42,9 @@
             (aanwezige-treinen (spoor 'aanwezige-treinen)))
         ((aanwezige-treinen 'snelheid-trein) id-symbol)))
 
+    (define (geef-aanwezige-treinen)
+      (spoor 'aanwezige-treinen))
+
     (define (geef-wissel-ids)
       (spoor 'wissel-ids))
 
@@ -51,13 +54,14 @@
     (define (verander-wisselstand! id stand)
       ((spoor 'wijzig-stand-switch!) id stand))
 
-    (define (dispatch-programma msg)
+    (define (dispatch-nmbs msg)
       (cond ((eq? msg 'zet-trein-op-spoor) zet-trein-op-spoor!)
             ((eq? msg 'verhoog-snelheid-trein!) verhoog-snelheid-trein!)
             ((eq? msg 'verlaag-snelheid-trein!) verlaag-snelheid-trein!)
             ((eq? msg 'geef-snelheid-trein) geef-snelheid-trein)
             ((eq? msg 'geef-wissel-ids) geef-wissel-ids)
+            ((eq? msg 'geef-aanwezige-treinen) geef-aanwezige-treinen)
             ((eq? msg 'geef-detectieblok-ids) geef-detectieblok-ids)
             ((eq? msg 'verander-wisselstand!) verander-wisselstand!)
             (else (display "foute boodschap - INFRABEL"))))
-    dispatch-programma))
+    dispatch-nmbs))

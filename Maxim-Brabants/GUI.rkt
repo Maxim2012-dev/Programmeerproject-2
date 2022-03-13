@@ -13,6 +13,7 @@
 (define TRAIN_ID_LABEL "Trein met ID:   ")
 (define SWITCH_ID_LABEL "Switch met ID:   ")
 (define DETECTION_BLOCK_ID_LABEL "Detectieblok met ID:   ")
+(define NO_TRAIN_PRESENT "Geen trein aanwezig")
 (define ADD_TRAIN_LABEL "Voeg trein toe")
 (define NEW_TRAIN_TITLE "Nieuwe trein")
 (define ADDED_TRAIN_TO_TRACK "Nieuwe trein toegevoegd aan spoor")
@@ -88,10 +89,10 @@
        [callback (lambda (b e)(new message%
                                    [label (string-append SPEED_TRAIN_INCREASED train-id)]
                                    [parent log-panel])
-                   ((0infrabel 'verhoog-snelheid-trein!) train-id)
-                   (send speed set-label (number->string ((infrabel 'geef-snelheid-trein) train-id))))])
+                   ((nmbs 'verhoog-snelheid-trein!) train-id)
+                   (send speed set-label (number->string ((nmbs 'geef-snelheid-trein) train-id))))])
   (define speed (new message%
-                     [label (number->string ((infrabel 'geef-snelheid-trein) train-id))]
+                     [label (number->string ((nmbs 'geef-snelheid-trein) train-id))]
                      [parent panel]
                      [horiz-margin 50]
                      [auto-resize #t]))
@@ -99,8 +100,8 @@
        [callback (lambda (b e)(new message%
                                    [label (string-append SPEED_TRAIN_DECREASED train-id)]
                                    [parent log-panel])
-                   ((infrabel 'verlaag-snelheid-trein!) train-id)
-                   (send speed set-label (number->string ((infrabel 'geef-snelheid-trein) train-id))))]))
+                   ((nmbs 'verlaag-snelheid-trein!) train-id)
+                   (send speed set-label (number->string ((nmbs 'geef-snelheid-trein) train-id))))]))
 
 
 ; Wanneer op een radiobutton wordt geklikt
@@ -109,19 +110,19 @@
         (switch-id-symbol (symbol->string switch-id)))
     (when selection
       (cond ((= selection 0)
-             ((infrabel 'verander-wisselstand!) switch-id-symbol 1)
+             ((nmbs 'verander-wisselstand!) switch-id-symbol 1)
              (new message%
                   [label (string-append SWITCH_ID_LABEL switch-id-symbol SWITCH_CHANGED (send radiobtn get-item-label 0))]
                   [parent log-panel]))
             ((= selection 1)
-             ((infrabel 'verander-wisselstand!) switch-id-symbol 2)
+             ((nmbs 'verander-wisselstand!) switch-id-symbol 2)
              (new message%
                   [label (string-append SWITCH_ID_LABEL switch-id-symbol SWITCH_CHANGED (send radiobtn get-item-label 1))]
                   [parent log-panel]))))))
 
 ; Het panel met de wissels vullen
 (define (fill-switches-panel)
-  (let ((switch-ids ((infrabel 'geef-wissel-ids))))
+  (let ((switch-ids ((nmbs 'geef-wissel-ids))))
     (define (iter ids)
       (when (not (null? ids))
         (define panel (new horizontal-panel% [parent switches-panel]
@@ -135,18 +136,45 @@
         (iter (cdr ids))))
     (iter switch-ids)))
 
+; Statussen van de detectieblokken op volgorde (message% structs)
+(define status-list '())
+
 ; Het panel met de detectieblokken vullen
 (define (fill-detection-blocks-panel)
-  (let ((detection-block-ids ((infrabel 'geef-detectieblok-ids))))
+  (let ((detection-block-ids ((nmbs 'geef-detectieblok-ids))))
     (define (iter ids)
       (when (not (null? ids))
         (define panel (new horizontal-panel% [parent detection-blocks-panel]
                            [alignment '(center top)]))
         (new message% 
-             [label (string-append DETECTION_BLOCK_ID_LABEL (symbol->string (car ids)))]
+             [label (string-append DETECTION_BLOCK_ID_LABEL (symbol->string (car ids)) " --------> ")]
              [parent panel])
+        (set! status-list (cons (new message% 
+                                     [label NO_TRAIN_PRESENT]
+                                     [parent panel]) status-list))
         (iter (cdr ids))))
-    (iter detection-block-ids)))
+    (iter detection-block-ids)
+    (set! status-list (reverse status-list))))
+
+; Statussen van de detectieblokken verversen
+(define (refresh-detection-blocks)
+  (let ((detection-block-ids ((nmbs 'geef-detectieblok-ids))))
+    ; statuses = message% structs
+    (define (iter ids statuses)
+      (when (not (null? ids))
+        ; over alle treinen gaan
+        (let trains-iter
+          ((train-series ((nmbs 'geef-aanwezige-treinen)))
+           (trains (((nmbs 'geef-aanwezige-treinen)) 'reeks)))
+          (when (not (null? trains))
+            ; Als id van detectieblok waar trein aanwezig is, gelijk is aan huidig detectieblok-id
+            (if (eq? ((train-series 'detectieblok-trein) ((car trains) 'trein-id))
+                     (car ids))
+                (send (car statuses) set-label (symbol->string ((car trains) 'trein-id)))
+                (send (car statuses) set-label NO_TRAIN_PRESENT))
+            (trains-iter train-series (cdr trains))))
+        (iter (cdr ids) (cdr statuses))))
+    (iter detection-block-ids status-list)))
 
 ; ======================= DIALOG - NIEUWE TREIN =======================
 
@@ -180,7 +208,7 @@
   (new message%
        [label ADDED_TRAIN_TO_TRACK]
        [parent log-panel])
-  ((infrabel 'zet-trein-op-spoor) id direction segment))
+  ((nmbs 'zet-trein-op-spoor) id direction segment))
 
 (define (onClickAddTrain btn event)
   (send new-train-dialog show #t))
@@ -214,6 +242,8 @@
         [label DETECTION_BLOCKS_VIEW]
         [parent tab-panel]
         [vert-margin 20])
+   (new button% [parent tab-panel] [label "Refresh status"]
+        [callback (lambda (b e) (refresh-detection-blocks))])
    detection-blocks-panel))
 
 ; Layout voor het tablad 'Logboek'
