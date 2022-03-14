@@ -1,0 +1,40 @@
+#lang r6rs
+
+;-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-
+;-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-
+;-*-*                                                                 *-*-
+;-*-*                Exception Handling Implementation                *-*-
+;-*-*                                                                 *-*-
+;-*-*                       Wolfgang De Meuter                        *-*-
+;-*-*                   2009  Software Languages Lab                  *-*-
+;-*-*                    Vrije Universiteit Brussel                   *-*-
+;-*-*                                                                 *-*-
+;-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-
+;-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-
+
+(library
+ (try-catch)
+ (export throw try-catch)       
+ (import (rnrs base))
+ 
+ (define (trick exception)
+   (error "No Exception Handler " exception))
+   
+ (define (throw exception) ; R6RS does not allow mutation of exported variables :-(
+   (trick exception))
+ 
+ (define (try-catch
+          try-lambda
+          filter
+          handler)
+   (call-with-current-continuation
+    (lambda (cont)
+      (define keep trick)
+      (set! trick (lambda (exception)
+                    (set! trick keep)
+                    (if (filter exception)
+                      (cont (handler exception))
+                      (throw exception))))
+      (let ((result (try-lambda)))
+        (set! trick keep)
+        result)))))

@@ -1,0 +1,49 @@
+#lang r6rs
+
+;-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-
+;-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-
+;-*-*                                                                 *-*-
+;-*-*                   Scheme Vector Memory Manager                  *-*-
+;-*-*                                                                 *-*-
+;-*-*               Theo D'Hondt and Wolfgang De Meuter               *-*-
+;-*-*                 2008 Programming Technology Lab                 *-*-
+;-*-*                   Vrije Universiteit Brussel                    *-*-
+;-*-*                                                                 *-*-
+;-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-
+;-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-
+
+(library
+ (vector)
+ (export root! vector? make-vector vector-ref vector-set!)
+ (import (except (rnrs base (6)) vector? vector-ref vector-set! make-vector vector-length)
+         (rnrs control)
+         ;(a-d memory automatic vectors recursive))
+         ;(a-d memory automatic vectors tail-recursive))
+        (a-d memory automatic vectors stop-and-copy))
+  
+ (define (make-vector length)
+   (if (negative? length)
+     (error "illegal length" length)
+     (let ((addr (allocate (+ length overhead))))
+       (do ((index overhead (+ index 1)))
+         ((>= index (+ length overhead)))
+         (poke! (+ addr index) null))
+       (make addr))))
+ 
+ (define (vector-set! vector index any)
+   (define addr (address vector))
+   (define length (- (peek addr) overhead))
+   (if (or (negative? index) (>= index length))
+     (error "illegal index" vector-set!))
+   (poke! (+ addr index overhead) any))
+ 
+ (define (vector-ref vector index)
+   (define addr (address vector))
+   (define length (- (peek addr) overhead))
+   (if (or (negative? index) (>= index length))
+     (error "illegal index" vector-ref))
+   (peek (+ addr index overhead)))
+ 
+ (define (vector-length vector)
+   (define addr (address vector))
+   (- (peek addr) overhead)))

@@ -1,0 +1,1 @@
+("5.0.2" ("f9eb2776ef550c544b7867a2c3c6b1cf61eeeaae" . "2ca2e649b0d63d8adbe00f0ce40e77d8ff9ac6fa") (collects #"rnrs" #"base-6.rkt") (collects #"errortrace" #"errortrace-key.rkt") (collects #"r6rs" #"main.rkt") (collects #"r6rs" #"private" #"prelims.rkt") (collects #"r6rs" #"lang" #"reader.rkt"))

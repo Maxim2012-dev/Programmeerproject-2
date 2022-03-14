@@ -1,0 +1,46 @@
+#lang r6rs
+
+;-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-
+;-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-
+;-*-*                                                                 *-*-
+;-*-*                     File with Counted Runs                      *-*-
+;-*-*                                                                 *-*-
+;-*-*                       Wolfgang De Meuter                        *-*-
+;-*-*                 2008 Programming Technology Lab                 *-*-
+;-*-*                   Vrije Universiteit Brussel                    *-*-
+;-*-*                                                                 *-*-
+;-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-
+;-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-
+
+(library
+ (file-with-counted-runs)
+ (export delete! make file file! 
+         records-gone records-gone! 
+         run-length run-length! name)
+ (import (rnrs base)
+         (only (rnrs io simple) display newline)
+         (rnrs mutable-pairs)
+         (prefix (a-d file sequential sequential-file) seq:))
+ 
+ (define file-with-runs-tag 'file-with-runs)
+ 
+ (define (make file run-length)
+   (list file-with-runs-tag file 0 run-length)) ; records-gone (in the current run)
+ (define (file fwrs)
+   (cadr fwrs))
+ (define (file! fwrs file)
+   (set-car! (cdr fwrs)))
+ (define (records-gone fwrs)
+   (caddr fwrs))
+ (define (records-gone! fwrs nr-of-records)
+   (set-car! (cddr fwrs) nr-of-records))
+ (define (run-length fwrs)
+   (cadr (cddr fwrs)))
+ (define (run-length! fwrs nr-of-records)
+   (set-car! (cdddr fwrs) nr-of-records))
+
+ (define (delete! fwrs)
+   (seq:delete! (file fwrs)))
+ 
+ (define (name fwrs)
+   (seq:name (file fwrs))))

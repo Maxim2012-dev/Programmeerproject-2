@@ -1,0 +1,100 @@
+#lang r6rs
+
+;-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-
+;-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-
+;-*-*                                                                 *-*-
+;-*-*                   Scheme Pair Memory Manager                    *-*-
+;-*-*               (with stop&copy garbage collection)               *-*-
+;-*-*               Theo D'Hondt and Wolfgang De Meuter               *-*-
+;-*-*                 2008 Programming Technology Lab                 *-*-
+;-*-*                   Vrije Universiteit Brussel                    *-*-
+;-*-*                                                                 *-*-
+;-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-
+;-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-
+
+(library
+ (stop-and-copy)
+ (export car-poke! car-peek cdr-poke! cdr-peek out-of-memory? make gc address make allocate pair-tag null root!)
+ (import (rnrs base))
+ 
+ (define null '())
+ 
+ (define memory-size 10)
+ (define next-free 0)
+ (define root null)
+ 
+ (define forward-tag 'forward)
+ (define forward (cons forward-tag null))
+ 
+ 
+ (define car-memory (make-vector memory-size null))
+ (define cdr-memory (make-vector memory-size null))
+ 
+ (define car-memory-2 (make-vector memory-size null))
+ (define cdr-memory-2 (make-vector memory-size null))
+
+ (define (car-poke! address val)
+   (vector-set! car-memory address val))
+ (define (cdr-poke! address val)
+   (vector-set! cdr-memory address val))
+ (define (car-peek address)
+   (vector-ref car-memory address))
+ (define (cdr-peek address)
+   (vector-ref cdr-memory address))
+
+ (define (root! r)
+   (set! root r))
+
+ (define (out-of-memory?)
+   (eq? next-free memory-size))
+ 
+ (define (allocate)
+   (define addr next-free)
+   (set! next-free (+ 1 next-free))
+   addr)
+ 
+ (define pair-tag 'pair)
+
+ (define (make addr)
+   (cons pair-tag addr))
+ 
+ (define (address pair)
+   (cdr pair))
+ 
+ (define (gc)
+   (define old-car-memory car-memory)
+   (define old-cdr-memory cdr-memory)
+   
+   (define (move old-pair)
+     (if (pair? old-pair)
+       (let* 
+           ((old-addr (address old-pair))
+            (old-car (vector-ref old-car-memory old-addr))
+            (old-cdr (vector-ref old-cdr-memory old-addr)))
+         (if (eq? old-car forward)
+           old-cdr
+           (let*
+               ((new-addr next-free)
+                (pair (make new-addr)))
+             (set! next-free (+ next-free 1))
+             (vector-set! old-car-memory old-addr forward)
+             (vector-set! old-cdr-memory old-addr pair)
+             (vector-set! car-memory new-addr old-car)
+             (vector-set! cdr-memory new-addr old-cdr)
+             pair)))
+       old-pair))
+   (define (scan addr)
+     (if (< addr next-free)
+       (let 
+           ((old-car (vector-ref car-memory addr))
+            (old-cdr (vector-ref cdr-memory addr)))
+         (vector-set! car-memory addr (move old-car))
+         (vector-set! cdr-memory addr (move old-cdr))
+         (scan (+ addr 1)))))
+   (set! car-memory car-memory-2)
+   (set! cdr-memory cdr-memory-2)  
+   (set! next-free 0)
+   (set! root (move root))
+   (scan 0)
+   (set! car-memory-2 old-car-memory)
+   (set! cdr-memory-2 old-cdr-memory)))

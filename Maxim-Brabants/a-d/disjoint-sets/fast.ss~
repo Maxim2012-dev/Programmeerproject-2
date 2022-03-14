@@ -1,0 +1,77 @@
+;-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-
+;-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-
+;-*-*                                                                 *-*-
+;-*-*                Disjoint Sets (Union-Find Problem)               *-*-
+;-*-*                                                                 *-*-
+;-*-*                       Wolfgang De Meuter                        *-*-
+;-*-*                 2008 Programming Technology Lab                 *-*-
+;-*-*                   Vrije Universiteit Brussel                    *-*-
+;-*-*                                                                 *-*-
+;-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-
+;-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-
+
+;-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-
+;-*-*                                                                 *-*-
+;-*-*                        Private Procedures                       *-*-
+;-*-*                                                                 *-*-
+;-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-
+
+(define @disjoint-set.tag 'disjoint-set)
+
+(define (@disjoint-set.make size)
+  (cons @disjoint-set.tag 
+        (cons (make-vector size ())
+              (make-vector size 0))))
+ 
+(define (@disjoint-set.ranks dset)
+  (cddr dset))
+
+(define (@disjoint-set.parents dset)
+  (cadr dset))
+
+;-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-
+;-*-*                                                                 *-*-
+;-*-*                        Public Procedures                        *-*-
+;-*-*                                                                 *-*-
+;-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-
+
+(define (disjoint-set.new size)
+  (define node-sets (@disjoint-set.make size))
+  (let all-singletons 
+    ((i 0))
+    (disjoint-set.singleton! node-sets i)
+    (if (< (+ 1 i) size)
+      (all-singletons (+ i 1))))
+  node-sets)
+
+(define (disjoint-set.disjoint-set? sobj)
+  (and (pair? sobj)
+       (eq? (car sobj) @disjoint-set.tag)))
+
+(define (disjoint-set.singleton! dset nmbr)
+  (define parents (@disjoint-set.parents dset))
+  (define ranks (@disjoint-set.ranks dset))
+  (vector-set! ranks nmbr 0)
+  (vector-set! parents nmbr nmbr)
+  dset)
+
+(define (disjoint-set.find dset nmbr)
+  (define parents (@disjoint-set.parents dset))
+  (define (find-rec elmt)
+    (if (not (eq? elmt (vector-ref parents elmt)))
+      (vector-set! parents elmt (find-rec (vector-ref parents elmt))))
+    (vector-ref parents elmt))
+  (find-rec nmbr))
+
+(define (disjoint-set.union! dset set1 set2)
+  (define ranks (@disjoint-set.ranks dset))
+  (define parents (@disjoint-set.parents dset))
+  (cond ((> (vector-ref ranks set1) 
+            (vector-ref ranks set2))
+         (vector-set! parents set2 set1))
+        ((= (vector-ref ranks set1) 
+            (vector-ref ranks set2))
+         (vector-set! parents set1 set2)
+         (vector-set! ranks set2 (+ 1 (vector-ref ranks set2))))
+        (else
+         (vector-set! parents set1 set2))))

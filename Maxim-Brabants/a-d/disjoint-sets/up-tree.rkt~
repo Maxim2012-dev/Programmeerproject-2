@@ -1,0 +1,55 @@
+#lang r6rs
+
+;-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-
+;-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-
+;-*-*                                                                 *-*-
+;-*-*              Disjoint Sets (Up-Tree Implementation)             *-*-
+;-*-*                                                                 *-*-
+;-*-*                       Wolfgang De Meuter                        *-*-
+;-*-*                   2009 Software Languages Lab                   *-*-
+;-*-*                    Vrije Universiteit Brussel                   *-*-
+;-*-*                                                                 *-*-
+;-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-
+;-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-
+
+(library
+ (disjoint-sets)
+ (export new disjoint-sets? find union! same-set?)
+ (import (rnrs base))
+ 
+ (define disjoint-sets-tag 'tree-disjoint-sets)
+ 
+ (define (make size)
+   (cons disjoint-sets-tag (make-vector size 0)))
+ 
+ (define (up-trees sets)
+   (cdr sets))
+ 
+ (define (new size)
+   (define singletons (make size))
+   (define parents (up-trees singletons))
+   (let fill-singletons 
+     ((i 0))
+     (vector-set! parents i i)
+     (if (< (+ 1 i) size)
+       (fill-singletons (+ i 1))))
+   singletons)
+ 
+ (define same-set? =)
+ 
+ (define (disjoint-sets? any)
+   (and (pair? any)
+        (eq? (car any) disjoint-sets-tag)))
+ 
+ (define (find sets nmbr)
+   (define parents (up-trees sets))
+   (let up-tree-loop
+     ((elmt nmbr))
+     (if (= elmt (vector-ref parents elmt))
+       elmt
+       (up-tree-loop (vector-ref parents elmt)))))
+ 
+ (define (union! sets set1 set2)
+   (define parents (up-trees sets))
+   (vector-set! parents set1 set2)
+   sets))

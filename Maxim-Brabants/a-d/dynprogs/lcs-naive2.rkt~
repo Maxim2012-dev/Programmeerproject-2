@@ -1,0 +1,50 @@
+#lang r6rs
+
+;-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-
+;-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-
+;-*-*                                                                 *-*-
+;-*-*                Longest Common Subsequence (Naive2)              *-*-
+;-*-*                                                                 *-*-
+;-*-*                       Wolfgang De Meuter                        *-*-
+;-*-*                   2014  Software Languages Lab                  *-*-
+;-*-*                    Vrije Universiteit Brussel                   *-*-
+;-*-*                                                                 *-*-
+;-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-
+;-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-
+
+(library
+ (lcs-naive2)
+ (export )
+ (import (rnrs base)
+         (rnrs control)
+         (rnrs io simple)
+         (a-d scheme-tools))
+ 
+ (define (longest str1 str2)
+   (if (< (string-length str1) (string-length str2))
+     str2 str1))
+ 
+ (define (table str1 str2)
+   (define c (make-2D-vector (string-length str1)
+                             (string-length str2)
+                             (lambda (i j)
+                               0)))
+   (define (rec i j)
+     (cond ((or (= i 0) (= j 0))
+            0)
+           ((eq? (string-ref str1 i)
+                 (string-ref str2 j))
+            (+ 1 (rec (- i 1) (- j 1))))
+           (else
+            (max (rec i (- j 1))
+                 (rec (- i 1) j)))))
+   (do ((i 0 (+ i 1)))
+     ((= i (string-length str1)) c)
+     (do ((j 0 (+ j 1)))
+       ((= j (string-length str2)))
+       (ij! c i j (rec i j)))))
+ 
+ 
+(define t (table "HUMAN" "CHIMPANZEE"))
+ ;    ['H', 'M', 'A', 'N']
+ )

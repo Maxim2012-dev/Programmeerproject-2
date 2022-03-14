@@ -1,0 +1,105 @@
+#lang r6rs
+
+;-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-
+;-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-
+;-*-*                                                                 *-*-
+;-*-*                 Hash Tables (Double Rehashing)                  *-*-
+;-*-*                                                                 *-*-
+;-*-*                       Wolfgang De Meuter                        *-*-
+;-*-*                 2008 Programming Technology Lab                 *-*-
+;-*-*                   Vrije Universiteit Brussel                    *-*-
+;-*-*                                                                 *-*-
+;-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-
+;-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-
+
+(library 
+ (dictionary)
+ (export new dictionary? insert! delete! find)
+ (import (rnrs base))
+ 
+ (define make-assoc cons)
+ (define assoc-key car)
+ (define assoc-value cdr)
+ 
+ (define dictionary-tag 'double-rehashing)
+ (define (make ==? M h1 h2)
+   (list dictionary-tag (make-vector M 'empty) (lambda (x) (mod (h1 x) M)) h2 ==?))
+ (define (storage table)
+   (cadr table))
+ (define (hash-function1 table)
+   (caddr table))
+ (define (hash-function2 table)
+   (cadddr table))
+ (define (equality table)
+   (caddr (cddr table)))
+ 
+ (define (rehash key address h2 M)
+   (mod (+ address (h2 key)) M))
+ 
+ (define (new ==? size h1 h2)
+   (make ==? size h1 h2))
+ 
+ (define (dictionary? any)
+   (and (pair? any)
+        (eq? (car any) dictionary-tag)))
+ 
+ (define (insert! table key val)
+   (define vector (storage table))
+   (define h1 (hash-function1 table))
+   (define h2 (hash-function2 table))
+   (define ==? (equality table))
+   (let rehash-iter
+     ((address (h1 key)))
+     (let ((assoc (vector-ref vector address)))
+       (cond 
+         ((or (eq? assoc 'empty)
+              (eq? assoc 'deleted))
+          (vector-set! vector address (make-assoc key val)))
+         ((==? (assoc-key assoc) key)
+          (vector-set! vector address (make-assoc key val)))
+         (else
+          (rehash-iter (rehash 
+                        key
+                        address
+                        h2
+                        (vector-length vector)))))))
+   table)
+ 
+ (define (find table key)
+   (define vector (storage table))
+   (define M (vector-length vector))
+   (define h1 (hash-function1 table))
+   (define h2 (hash-function2 table))
+   (define ==? (equality table))
+   (let rehash-iter
+     ((address (h1 key)))
+     (let ((assoc (vector-ref vector address)))
+       (cond
+         ((eq? assoc 'empty)
+          #f)
+         ((eq? assoc 'deleted)
+          (rehash-iter (rehash key address h2 M)))
+         ((==? (assoc-key assoc) key)
+          (assoc-value assoc))
+         (else
+          (rehash-iter (rehash key address h2 M)))))))
+ 
+ (define (delete! table key)
+   (define vector (storage table))
+   (define M (vector-length vector))
+   (define h1 (hash-function1 table))
+   (define h2 (hash-function2 table))
+   (define ==? (equality table))
+   (let rehash-iter
+     ((address (h1 key)))
+     (let ((assoc (vector-ref vector address)))
+       (cond
+         ((eq? assoc 'empty)
+          #f)
+         ((eq? assoc 'deleted)
+          (rehash-iter (rehash key address h2 M)))
+         ((==? (assoc-key assoc) key)
+          (vector-set! vector address 'deleted))
+         (else
+          (rehash-iter (rehash key address h2 M))))))
+   table))

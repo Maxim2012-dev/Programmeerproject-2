@@ -1,0 +1,36 @@
+#lang r6rs
+
+;-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-
+;-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-
+;-*-*                                                                 *-*-
+;-*-*                   Longest Common Subsequence                    *-*-
+;-*-*                                                                 *-*-
+;-*-*                       Wolfgang De Meuter                        *-*-
+;-*-*                   2014  Software Languages Lab                  *-*-
+;-*-*                    Vrije Universiteit Brussel                   *-*-
+;-*-*                                                                 *-*-
+;-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-
+;-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-
+
+(import
+ (rnrs base)
+ (rnrs io simple)
+ (a-d graph-algorithms directed single-source-shortest-path)
+ (a-d graph-algorithms directed traclo-weighted)
+ (a-d graph examples directed-weighted))
+
+def lcs(xs, ys):
+    '''Return a longest common subsequence of xs and ys.    
+    Example
+    >>> lcs("HUMAN", "CHIMPANZEE")
+    ['H', 'M', 'A', 'N']
+    '''
+    if xs=='' or ys=='':
+        return []
+    else:
+        xb,xe = xs[:-1], xs[-1]
+        yb,ye = ys[:-1], ys[-1]
+        if xe == ye:
+            return lcs(xb, yb) + [xe]
+        else:
+            return max(lcs(xs, yb), lcs(xb, ys), key=len)

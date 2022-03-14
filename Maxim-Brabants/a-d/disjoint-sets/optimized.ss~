@@ -1,0 +1,69 @@
+#lang r6rs
+
+;-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-
+;-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-
+;-*-*                                                                 *-*-
+;-*-*                 Disjoint Sets (Path Compression)                *-*-
+;-*-*                                                                 *-*-
+;-*-*                       Wolfgang De Meuter                        *-*-
+;-*-*                   2009 Software Languages Lab                   *-*-
+;-*-*                    Vrije Universiteit Brussel                   *-*-
+;-*-*                                                                 *-*-
+;-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-
+;-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-
+
+(library
+ (disjoint-sets)
+ (export new disjoint-sets? find union! same-set?)
+ (import (rnrs base (6)))
+ 
+ (define disjoint-sets-tag 'path-compression-disjoint-sets)
+ 
+ (define (make size)
+   (cons disjoint-sets-tag 
+         (cons (make-vector size 0)
+               (make-vector size 0))))
+ 
+ (define (tree-ranks sets)
+   (cddr sets))
+ 
+ (define (up-trees sets)
+   (cadr sets))
+ 
+ (define (new size)
+   (define singletons (make size))
+   (define parents (up-trees singletons))
+   (let fill-singletons 
+     ((i 0))
+     (vector-set! parents i i)
+     (if (< (+ 1 i) size)
+       (fill-singletons (+ i 1))))
+   singletons)
+ 
+ (define same-set? =)
+ 
+ (define (disjoint-sets? any)
+   (and (pair? any)
+        (eq? (car any) disjoint-sets-tag)))
+ 
+ (define (find sets nmbr)
+   (define parents (up-trees sets))
+   (define (up-tree-rec elmt)
+     (if (not (eq? elmt (vector-ref parents elmt)))
+       (vector-set! parents elmt (up-tree-rec (vector-ref parents elmt))))
+     (vector-ref parents elmt))
+   (up-tree-rec nmbr))
+ 
+ (define (union! sets set1 set2)
+   (define ranks (tree-ranks sets))
+   (define parents (up-trees sets))
+   (cond ((> (vector-ref ranks set1) 
+             (vector-ref ranks set2))
+          (vector-set! parents set2 set1))
+         ((= (vector-ref ranks set1) 
+             (vector-ref ranks set2))
+          (vector-set! parents set1 set2)
+          (vector-set! ranks set2 (+ 1 (vector-ref ranks set2))))
+         (else
+          (vector-set! parents set1 set2)))
+   sets))

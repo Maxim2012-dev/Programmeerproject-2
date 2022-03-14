@@ -1,0 +1,118 @@
+#lang r6rs
+
+;-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-
+;-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-
+;-*-*                                                                 *-*-
+;-*-*                 Scheme Vector Memory Manager                    *-*-
+;-*-*              (with stop&copy garbage collection)                *-*-
+;-*-*               Theo D'Hondt and Wolfgang De Meuter               *-*-
+;-*-*                 2008 Programming Technology Lab                 *-*-
+;-*-*                   Vrije Universiteit Brussel                    *-*-
+;-*-*                                                                 *-*-
+;-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-
+;-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-
+
+(library
+ (stop-and-copy)
+ (export root! overhead vector? allocate poke! peek make null address)
+ (import (except (rnrs base (6)) vector?)
+         (rnrs control))
+ 
+ (define null '())
+ 
+ (define overhead 1)
+ (define vector-tag 'vector)
+ (define forward-tag 'forward)
+ (define memory-size 25)
+ (define next-free 0)
+ (define root null)
+ 
+ (define (root! r)
+   (set! root r))
+ 
+ (define (vector? any)
+   (and (pair? any)
+        (eq? (car any) vector-tag)))
+ 
+ (define memory (make-vector memory-size null))
+ 
+ (define (poke! addr exp)
+   (vector-set! memory addr exp))
+ 
+ (define (peek addr)
+   (vector-ref memory addr))
+ 
+ (define old-memory (make-vector memory-size null))
+ 
+ (define (poke-old! addr exp)
+   (vector-set! old-memory addr exp))
+ 
+ (define (peek-old addr)
+   (vector-ref old-memory addr))
+ 
+ (define (make-forward addr)
+   (cons forward-tag addr))
+ (define (forward-address forward)
+   (cdr forward))
+ 
+ (define (forward? exp)
+   (and (pair? exp)
+        (eq? (car exp) forward-tag)))
+ 
+ (define (make addr)
+   (cons vector-tag addr))
+ 
+ (define (address vector)
+   (if (vector? vector)
+     (cdr vector)
+     (error "vector expected" vector)))
+ 
+ (define (gc)
+   (define hold-memory memory)
+   
+   (define (move old-vector)
+     (if (vector? old-vector)
+       (let* 
+           ((old-addr (address old-vector))
+            (old-size (peek-old old-addr)))
+         (if (forward? old-size)
+           (make (forward-address old-size))
+           (let*
+               ((addr next-free)
+                (vector (make addr)))
+             (set! next-free (+ next-free old-size))
+             (poke-old! old-addr (make-forward addr))
+             (poke! addr old-size)
+             (do ((index 1 (+ index 1)))
+               ((>= index old-size) vector)
+               (let
+                   ((comp (peek-old (+ old-addr index))))
+                 (poke! (+ addr index) comp))))))
+       old-vector))
+   
+   (define (scan addr)
+     (if (< addr next-free)
+       (let
+           ((size (peek addr)))
+         (do ((index 1 (+ index 1)))
+           ((>= index size))
+           (let
+               ((comp (peek (+ addr index))))
+             (poke! (+ addr index) (move comp))))
+         (scan (+ addr size)))))
+   (set! memory old-memory)
+   (set! old-memory hold-memory)
+   (set! next-free 0)
+   (set! root (move root))
+   (scan 0))
+ 
+ (define (allocate size)
+   (define boundary (- memory-size size))
+   (if (> next-free boundary)
+     (gc))
+   (if (> next-free boundary)
+     (error "storage overflow" size))
+   (let ((addr next-free))
+     (set! next-free (+ next-free size))
+     (poke! addr size)
+     addr)))

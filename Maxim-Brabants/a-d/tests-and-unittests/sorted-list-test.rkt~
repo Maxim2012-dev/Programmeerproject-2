@@ -1,0 +1,88 @@
+#lang r6rs
+
+;-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-
+;-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-
+;-*-*                                                                 *-*-
+;-*-*                        Sorted List Tests                        *-*-
+;-*-*                                                                 *-*-
+;-*-*                       Wolfgang De Meuter                        *-*-
+;-*-*                 2008 Programming Technology Lab                 *-*-
+;-*-*                   Vrije Universiteit Brussel                    *-*-
+;-*-*                                                                 *-*-
+;-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-
+;-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-
+
+(import (a-d sorted-list linked)
+        ;(a-d sorted-list vectorial)
+        (except (rnrs base) length)
+        (srfi :27) ; import random-integer
+        (only (scheme base) require planet)
+        (rnrs io simple))
+
+(require (planet schematics/schemeunit:3/test))
+
+(define s1 (new < =))
+
+(define (random-inbetween l r)
+  (+ l (random-integer (+ (- r l) 1))))
+
+(define (iter s n)
+  (if (= n 0)
+    (display "done")
+    (begin (add! s (random-inbetween 10 10000))
+           (iter s (- n 1)))))
+
+(iter s1 10)(newline)
+(display s1)(newline)
+(define s2 (from-scheme-list '(1 3 5 7) < =))
+
+(define (check-sorted s)
+  (define sorted #t)
+  (set-current-to-first! s)
+  (let loop
+    ((prev (peek s)))
+    (set-current-to-next! s)
+    (if (and (current-has-next? s)
+             (< prev (peek s)))
+      (loop (peek s))
+      (not (current-has-next? s)))))
+
+(check-equal? (check-sorted s1) #t)
+(check-equal? (check-sorted s2) #t)
+
+(set-current-to-first! s1)
+(define first (peek s1)) 
+(set-current-to-next! s1)
+(define second (peek s1)) 
+(set-current-to-next! s1)
+(define third (peek s1)) 
+(set-current-to-next! s1)
+(define fourth (peek s1)) 
+(find! s1 first)
+(delete! s1)
+(display s1)(newline)
+(set-current-to-first! s1)
+(check-equal? (peek s1) second)
+(find! s1 third)
+(delete! s1)
+(display s1)(newline)
+
+(set-current-to-first! s1)
+(set-current-to-next! s1)
+(check-equal? (peek s1) fourth)
+(display s1)(newline)
+(check-equal? (length s1) 8)
+(set-current-to-first! s1)
+(check-equal? (current-has-next? s1) #t)
+(define penultimate
+  (let find-last
+    ((pen -1))
+    (if (current-has-next? s1)
+      (begin (set! pen (peek s1))
+             (set-current-to-next! s1)
+             (find-last pen))
+      pen)))
+(define last (peek s1))
+(delete! s1)
+(find! s1 penultimate)
+(check-equal? (current-has-next? s1) #f)

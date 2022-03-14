@@ -1,0 +1,59 @@
+#lang r6rs
+
+;-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-
+;-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-
+;-*-*                                                                 *-*-
+;-*-*                               Paths                             *-*-
+;-*-*                                                                 *-*-
+;-*-*               Theo D'Hondt and Wolfgang De Meuter               *-*-
+;-*-*              1993 - 2008 Programming Technology Lab             *-*-
+;-*-*                   Vrije Universiteit Brussel                    *-*-
+;-*-*                                                                 *-*-
+;-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-
+;-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-
+
+(library
+ (path)
+ (export new empty? pop! push! node slot clear! print)
+ (import (rnrs base)
+         (rnrs io simple)
+         (rnrs control)
+         (rnrs mutable-pairs)
+         (prefix (a-d db index b-tree node) node:))
+ 
+ (define path-tag 'path)
+ 
+ (define (new)
+   (cons path-tag '()))
+ 
+ (define (empty? path)
+   (null? (cdr path)))
+ 
+ (define (pop! path)
+   (set-cdr! path (cddr path)))
+ 
+ (define (push! path node slot)
+   (set-cdr! path (cons (cons node slot) (cdr path))))
+ 
+ (define (node path)
+   (caadr path))
+ 
+ (define (slot path)
+   (cdadr path))
+ 
+ (define (clear! path)
+   (set-cdr! path ()))
+ 
+ (define (print path)
+   (display "STACK = <---] ")
+   (if (not (null? (cdr path)))
+       (let loop
+         ((s (cdr path)))
+         (display "< ")
+         (display (node:position (car (car s))))
+         (display ",")
+         (display (cdr (car s)))
+         (display ">")
+         (when (not (null? (cdr s)))
+           (loop (cdr s)))))
+   (display "]]]")(newline)))

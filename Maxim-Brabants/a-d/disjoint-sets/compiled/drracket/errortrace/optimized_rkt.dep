@@ -1,0 +1,1 @@
+("5.2" ("becf01bd8e229b404e495f9e15baab9575f9828c" . "7bd2455ee345cbb05e1c19dac51432011a74eea8") (collects #"srfi" #"%3a9.rkt") (collects #"rnrs" #"base-6.rkt") (collects #"r6rs" #"main.rkt") (collects #"errortrace" #"errortrace-key.rkt") (collects #"r6rs" #"private" #"prelims.rkt") (collects #"r6rs" #"lang" #"reader.rkt"))

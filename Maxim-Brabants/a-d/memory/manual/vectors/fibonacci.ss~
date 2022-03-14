@@ -1,0 +1,223 @@
+#lang r6rs
+
+;-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-
+;-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-
+;-*-*                                                                 *-*-
+;-*-*               Finoncci Buddy System Memory Manager              *-*-
+;-*-*                                                                 *-*-
+;-*-*                 Theo D'Hondt - Wolfgang De Meuter               *-*-
+;-*-*               1993-2009 Programming Technology Lab              *-*-
+;-*-*                   Vrije Universiteit Brussel                    *-*-
+;-*-*                                                                 *-*-
+;-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-
+;-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-
+
+(library
+ (fibonacci)
+ (export initialize size-free overhead null locate-free pop-free push-free peek poke!)
+ (import (rnrs base (6))
+         (rnrs control))
+ 
+ (define overhead 2)
+ (define null '())
+ 
+ (define memory-size 466) ; (fib 11) with 0->2; 1->4
+ 
+ (define memory (make-vector memory-size null))
+ 
+ (define (peek addr)
+   (vector-ref memory addr))
+ 
+ (define (poke! addr value)
+   (vector-set! memory addr value))
+ 
+ (define fib-seed-1 2)
+ (define fib-seed-2 4)
+ 
+ (define max-index
+   (let loop 
+     ((index 0)
+      (fib-1 fib-seed-1)
+      (fib-2 fib-seed-2))
+     (if (> (+ fib-1 fib-2) memory-size)
+       index
+       (loop (+ index 1) fib-2 (+ fib-1 fib-2)))))
+ 
+ (define free-tab (make-vector max-index null))
+ (define size-tab (make-vector max-index))
+ 
+ (define (size index)
+   (vector-ref size-tab (- index 1)))
+ 
+ (define (size! index size)
+   (vector-set! size-tab (- index 1) size))
+ 
+ (define (free index)
+   (vector-ref free-tab (- index 1)))
+ 
+ (define (free! index free)
+   (vector-set! free-tab (- index 1) free))
+ 
+ (define (index addr)
+   (peek (+ addr 0)))
+ 
+ (define (index! addr index)
+   (poke! (+ addr 0) index))
+ 
+ (define (count addr)
+   (peek (+ addr 1)))
+ 
+ (define (count! addr count)
+   (poke! (+ addr 1) count))
+ 
+ (define (next addr)
+   (peek (+ addr 2)))
+ 
+ (define (next! addr next)
+   (poke! (+ addr 2) next))
+ 
+ (define (previous addr)
+   (peek (+ addr 3)))
+ 
+ (define (previous! addr next)
+   (poke! (+ addr 3) next))
+ 
+ (define (locate-free req-size)
+   (define (locate first last)
+     (if (<= first last)
+       (let 
+           ((here (div (+ first last) 2)))
+         (if (> req-size (size here))
+           (locate (+ here 1) last)
+           (locate first (- here 1))))
+       first))
+   (define index (locate 1 max-index))
+   (if (> index max-index)
+     null
+     index))
+ 
+ (define (size-free addr)
+   (size (index addr)))
+ 
+ (define (pop index)
+   (define addr (free index))
+   (if (eq? addr null)
+     null
+     (let 
+         ((next (next addr)))
+       (free! index next)
+       (if (not (eq? next null))
+         (previous! next null))
+       (index! addr index)
+       addr)))
+ 
+ (define (pop-free req-index) 
+   (define addr (pop req-index))
+   (define (split addr)
+     (define req-index (index addr))
+     (define req-size  (size (- req-index 2)))
+     (define req-count (count addr))
+     (define buddy (+ addr req-size))
+     (index! addr (- req-index 2))
+     (count! addr (+ req-count 1))
+     (index! buddy  (- req-index 1))
+     (count! buddy  0)
+     buddy)
+   (define (split-right req-index)
+     (if (= req-index max-index)
+         null
+         (let
+             ((addr (pop-free (+ req-index 1))))
+           (if (eq? addr null)
+               null
+               (let
+                   ((buddy (split addr)))
+                 (push buddy)
+                 addr)))))
+   (define (split-left req-index)
+     (if (= req-index max-index)
+         null
+         (let
+             ((addr (pop (+ req-index 1))))
+           (if (eq? addr null)
+               (split-right (+ req-index 1))
+               (let
+                   ((buddy (split addr)))
+                 (push addr)
+                 buddy)))))
+   (if (eq? addr null)
+       (if (= req-index 1)
+           (split-right (+ req-index 1))
+           (split-left  req-index))
+       addr))
+ 
+ (define (push addr)
+   (define block-index (index addr))
+   (define next (free block-index))
+   (next! addr next)
+   (previous! addr null)
+   (if (not (eq? next null))
+     (previous! next addr))
+   (index! addr (- block-index))
+   (free! block-index addr))
+ (define (extract addr)
+   (define block-index (- (index addr)))
+   (define block-next (next addr))
+   (define block-previous (previous addr))
+   (if (eq? block-previous null)
+     (free! block-index block-next)
+     (next! block-previous block-next))
+   (if (not (eq? block-next null))
+     (previous! block-next block-previous)))
+
+ (define (push-free addr)
+   (define block-index (index addr))
+   (define block-count (count addr))
+   (define (merge-right)
+     (define buddy-index (+ block-index 1))
+     (if (< buddy-index max-index)
+       (let*
+           ((block-size (size block-index))
+            (buddy-addr (+ addr block-size))
+            (actual-index (index buddy-addr)))
+         (cond
+           ((= actual-index (- buddy-index))
+            (extract buddy-addr)
+            (index! addr (+ block-index 2))
+            (count! addr (- block-count 1))
+            (push-free addr))
+           (else
+            (push addr))))
+       (push addr)))
+   (define (merge-left)
+     (if (< block-index max-index)
+       (let*
+           ((buddy-index (- block-index 1))
+            (buddy-size (size buddy-index))
+            (buddy-addr (- addr buddy-size))
+            (actual-index (index buddy-addr)))
+         (if (= actual-index (- buddy-index))
+           (let ((buddy-count (count buddy-addr)))
+             (extract buddy-addr)
+             (index! buddy-addr (+ block-index 1))
+             (count! buddy-addr (- buddy-count 1))
+             (push-free buddy-addr))
+           (push addr)))
+       (push addr)))
+   (if (positive? block-count)
+     (merge-right)
+     (merge-left)))
+ 
+ (define (initialize)
+   (let loop
+     ((index 1)
+      (fib-1 fib-seed-1)
+      (fib-2 fib-seed-2))
+     (when (<= index max-index)
+       (size! index (+ fib-1 fib-2))
+       (free! index null)
+       (loop (+ index 1) fib-2 (+ fib-1 fib-2))))
+   
+   (index! 0 max-index)
+   (count! 0 0)
+   (push-free 0)))

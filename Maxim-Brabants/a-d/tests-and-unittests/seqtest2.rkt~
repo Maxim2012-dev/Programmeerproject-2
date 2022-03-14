@@ -1,0 +1,22 @@
+#lang r6rs
+
+
+(import (prefix (a-d disk config) disk:)
+        (prefix (a-d disk file-system) fs:)
+        (prefix (a-d file sequential output-file) out:)
+        (prefix (a-d file sequential input-file) in:)
+        (rnrs base)
+        (rnrs control)
+        (rnrs io simple)
+        (a-d scheme-tools))
+ 
+(define d (disk:new "testdisk"))
+(fs:format! d)
+(newline)(display (list "free=" (fs:df d)))(newline)
+(define f (out:new d "testnum")) ; 5 bytes per number
+(fs:ls d)
+(newline)(display (list "free=" (fs:df d)))(newline)
+(display "--------------------------START WRITING--------------------------")(newline)
+(set! f (out:open-write! d "testnum"))(display "begin")
+(newline)
+(fs:ls d)(newline)

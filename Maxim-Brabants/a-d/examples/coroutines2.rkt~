@@ -1,0 +1,32 @@
+#lang r6rs
+
+
+(library
+ (coroutines2)
+ (export new-process suspend start)
+ (import (rnrs base)
+         (prefix (a-d ring) ring:)
+         (rnrs io simple)
+         (rnrs mutable-pairs))
+
+  (define *ring-of-processes*
+   (ring:new))
+  
+  (define (start value)
+    ((cdr (ring:peek *ring-of-processes*)) value))
+  
+  (define (new-process procedure)
+    (let ((process (cons 'proc procedure)))
+      (ring:add-after! *ring-of-processes* process)
+      process))
+  
+  (define (suspend value)
+    (define *me* (ring:peek *ring-of-processes*))
+    (call-with-current-continuation
+     (lambda (c)
+       (set-cdr! *me* c)
+       (ring:shift-forward! *ring-of-processes*)
+       (let ((target (cdr (ring:peek *ring-of-processes*))))
+         (display "here is the target:")(display target)(newline)
+         (target value))))))
+

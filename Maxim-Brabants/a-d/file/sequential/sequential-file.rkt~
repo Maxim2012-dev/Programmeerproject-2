@@ -1,0 +1,78 @@
+#lang r6rs
+
+;-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-
+;-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-
+;-*-*                                                                 *-*-
+;-*-*                  Sequential Files (Shared Code)                 *-*-
+;-*-*                                                                 *-*-
+;-*-*                       Wolfgang De Meuter                        *-*-
+;-*-*                   2010  Software Languages Lab                  *-*-
+;-*-*                    Vrije Universiteit Brussel                   *-*-
+;-*-*                                                                 *-*-
+;-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-
+;-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-
+
+(library
+ (sequential-file)
+ (export make name delete! disk sequential-file? first first!
+         header header! current-offset current-offset! buffer buffer!
+         eof-tag eob-tag int-tag rea-tag num-tag str-tag)
+ (import (prefix (a-d disk config) disk:)
+         (prefix (a-d disk file-system) fs:)
+         (rnrs base)
+         (rnrs control)
+         (except (rnrs io simple) read)
+         (rnrs io ports)
+         (rnrs arithmetic fixnums)
+         (rnrs arithmetic flonums)
+         (rnrs bytevectors)
+         (rnrs mutable-pairs))
+ 
+ (define file-tag 'sequential-file)
+ 
+ (define eof-tag 255) ; end of file
+ (define eob-tag 254) ; end of block; but more stuff in the next block
+ (define int-tag 1) ; integer numbers
+ (define rea-tag 2) ; real numbers
+ (define num-tag 3) ; all other numbers
+ (define str-tag 4) ; strings
+ 
+ (define first-offset 0)
+ (define current-offset-offset disk:block-pointer-size)
+ 
+ (define (first hder)
+   (disk:decode-fixed-natural hder first-offset disk:block-pointer-size))
+ (define (first! hder bptr)
+   (disk:encode-fixed-natural! hder first-offset disk:block-pointer-size bptr))
+ (define (current-offset hder)
+   (disk:decode-fixed-natural hder current-offset-offset disk:block-index-size))
+ (define (current-offset! hder offs)
+   (disk:encode-fixed-natural! hder current-offset-offset disk:block-index-size offs))   
+ 
+ (define (make disk name hder)
+   (list file-tag disk name hder ())) ; buffer uninitialized
+ 
+ (define (disk file)
+   (cadr file))
+ (define (name file)
+   (caddr file))
+ (define (header file)
+   (cadddr file))
+ (define (header! file hdr)
+   (set-car! (cdddr file) hdr))
+ (define (buffer file)
+   (cadr (cdddr file)))
+ (define (buffer! file bfr)
+   (set-car! (cddddr file) bfr))
+ 
+ (define (sequential-file? any)
+   (and (pair? any)
+        (car any 'sequential-file)))
+
+ (define (delete! file)
+   (define fnam (name file))
+   (define hder (header file))
+   (define dsk (disk file))
+   (fs:delete-chain! dsk (first hder))
+   (fs:delete-block hder) ; delete header
+   (fs:rm dsk fnam)))     ; remove from directory

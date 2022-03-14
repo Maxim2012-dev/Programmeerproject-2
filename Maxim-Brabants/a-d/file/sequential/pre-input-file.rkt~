@@ -1,0 +1,179 @@
+#lang r6rs
+
+;-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-
+;-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-
+;-*-*                                                                 *-*-
+;-*-*                     Sequential Input Files                      *-*-
+;-*-*                                                                 *-*-
+;-*-*                       Wolfgang De Meuter                        *-*-
+;-*-*                   2010  Software Languages Lab                  *-*-
+;-*-*                    Vrije Universiteit Brussel                   *-*-
+;-*-*                                                                 *-*-
+;-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-
+;-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-
+
+(library
+ (input-file)
+ (export sequential-file? delete! name
+         open-read! rewrite! 
+         close-read! read peek has-more?)
+ (import (prefix (a-d disk config) disk:)
+         (prefix (a-d disk file-system) fs:)
+         (a-d file sequential sequential-file)
+         (only (a-d file sequential output-file) open-write!)
+         (rnrs base)
+         (rnrs control)
+         (except (rnrs io simple) read)
+         (rnrs io ports)
+         (rnrs arithmetic fixnums)
+         (rnrs arithmetic flonums)
+         (rnrs bytevectors)
+         (rnrs mutable-pairs))
+
+ (define (open-read! disk name)
+   (define bptr (fs:whereis disk name))
+   (define hder (disk:read-block disk bptr))
+   (define file (make disk name hder))
+   (define fptr (first hder))
+   (define frst (disk:read-block disk fptr))
+   (current-offset! hder disk:block-pointer-size) ; skip the "next" pointer
+   (buffer! file frst)
+   file)
+
+ (define (rewrite! file)
+   (define hder (header file))
+   (define bffr (buffer file))
+   (define fptr (first hder))
+   (cond ((fs:null-block? fptr)
+          (buffer! file ())
+          (current-offset! hder disk:block-size))
+         (else
+          (let ((frst (disk:read-block (disk file) fptr)))
+            (disk:encode-byte! frst disk:block-pointer-size eof-tag)
+            (current-offset! hder disk:block-pointer-size)
+            (buffer! file frst))))
+   file)
+   
+ (define (close-read! file)
+   (disk:write-block! (header file)))
+ 
+ (define (has-more? file)
+   (define hder (header file))
+   (define bffr (buffer file))
+   (define offs (current-offset hder))
+   (and (not (null? bffr))
+        (or  (and (< offs disk:block-size)
+                  (not (= (disk:decode-byte bffr offs) eof-tag)))
+             (not (fs:null-block? (fs:next-bptr bffr))))))
+ 
+ (define (supply-bytes! file)
+   (define bffr (buffer file))
+   (define hder (header file))
+   (define curr (current-offset hder))
+   (if (or (>= curr disk:block-size)
+           (= (disk:decode-byte bffr curr) eob-tag))
+       (read-next-block! file)))
+ 
+ (define (read-next-block! file)
+   (define dsk (disk file))
+   (define hder (header file))
+   (define bffr (buffer file))
+   (define next-bptr (fs:next-bptr bffr))
+   (define next-blck (disk:read-block dsk next-bptr))
+   (buffer! file next-blck)
+   (current-offset! hder disk:block-pointer-size)) ; skip "next" pointer
+
+ (define (read-type-tag file)
+   (supply-bytes! file)
+   (let* ((hder (header file))
+          (bffr (buffer file))
+          (curr (current-offset hder))
+          (ttag (disk:decode-byte bffr curr)))
+     (current-offset! hder (+ curr 1))
+     ttag))
+
+ (define (peek-integer file)
+   (supply-bytes! file)
+   (let* ((hder (header file))
+          (bffr (buffer file))
+          (curr (current-offset hder)))
+     (disk:decode-arbitrary-integer bffr curr)))
+
+ (define (peek-real file) 
+   (supply-bytes! file)
+   (let* ((hder (header file))
+          (bffr (buffer file))
+          (curr (current-offset hder)))
+     (cons (disk:decode-real bffr curr disk:real64) (+ curr disk:real64))))
+ 
+ (define (rollin-bytes file byts indx leng)
+   (define hder (header file))
+   (define bffr (buffer file))
+   (define curr (current-offset hder))
+   (cond ((= (+ 1 indx) leng)
+          curr)
+         (else
+          (supply-bytes! file) (set! curr (current-offset hder))(set! bffr (buffer file))
+          (cond ((< (+ curr leng) disk:block-size) 
+                 (disk:decode-bytes bffr byts curr indx leng)
+                 (+ curr leng))
+                (else
+                 (current-offset! hder disk:block-size)
+                 (disk:decode-bytes bffr byts curr indx (- disk:block-size curr))
+                 (rollin-bytes file byts (+ indx (- disk:block-size curr)) (- leng (- disk:block-size curr))))))))
+ 
+ (define (peek-string file)
+   (supply-bytes! file)
+   (let* ((hder (header file))
+          (bffr (buffer file))
+          (curr (current-offset hder))
+          (leng (disk:decode-byte bffr curr)))
+     (current-offset! hder (+ curr 1))
+     (let* ((byts (make-bytevector leng))
+            (cur2 (rollin-bytes file byts 0 leng)))
+       (cons (utf8->string byts) cur2))))
+ 
+ (define (peek-number file)
+   (let ((vcur (peek-string file)))
+     (cons (string->number (car vcur))
+           (cdr vcur))))
+ 
+ (define (read file)
+   (define hder (header file))
+   (define curr (current-offset hder))
+   (let* ((ttag (read-type-tag file))
+          (vcur (cond ((= ttag int-tag)
+                       (peek-integer file))
+                      ((= ttag rea-tag)
+                       (peek-real file))
+                      ((= ttag num-tag)
+                       (peek-number file))
+                      ((= ttag str-tag)
+                       (peek-string file))
+                      ((= ttag eof-tag)
+                       (cons () curr))
+                      (else
+                       (error "unsupported type on file (read)" ttag)))))
+     (current-offset! hder (cdr vcur))
+     (car vcur)))
+ 
+ (define (peek file)
+   (define hder (header file))
+   (let* ((bffr (buffer file))
+          (curr-offs (current-offset hder))
+          (ttag (read-type-tag file))
+          (res (car (cond ((= ttag int-tag)
+                           (peek-integer file))
+                          ((= ttag rea-tag)
+                           (peek-real file))
+                          ((= ttag num-tag)
+                           (peek-number file))
+                          ((= ttag str-tag)
+                           (peek-string file))
+                          ((= ttag eof-tag)
+                           (cons () curr-offs))
+                          (else
+                           (error "unsupported type on file (peek)" ttag))))))
+     (current-offset! hder curr-offs)
+     (buffer! file bffr)
+     res)))

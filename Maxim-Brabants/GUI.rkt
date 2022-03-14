@@ -16,6 +16,7 @@
 (define NO_TRAIN_PRESENT "Geen trein aanwezig")
 (define ADD_TRAIN_LABEL "Voeg trein toe")
 (define NEW_TRAIN_TITLE "Nieuwe trein")
+(define AUTOMATIC_ROUTE "Automatisch traject")
 (define ADDED_TRAIN_TO_TRACK "Nieuwe trein toegevoegd aan spoor")
 (define SPEED_TRAIN_INCREASED "Snelheid verhoogd van trein met ID: ")
 (define SPEED_TRAIN_DECREASED "Snelheid verlaagd van trein met ID: ")
@@ -83,7 +84,7 @@
   (define panel (new horizontal-panel% [parent trains-panel]
                      [alignment '(center top)]))
   (new message% 
-       [label (string-append TRAIN_ID_LABEL train-id)]
+       [label (string-append TRAIN_ID_LABEL "\t" train-id "\t")]
        [parent panel])
   (new button% [parent panel] [label INCREASE_SPEED]
        [callback (lambda (b e)(new message%
@@ -104,20 +105,20 @@
                    (send speed set-label (number->string ((nmbs 'geef-snelheid-trein) train-id))))]))
 
 
-; Wanneer op een radiobutton wordt geklikt
+; Wanneer op een radiobutton wordt geklikt (switches)
 (define (onRadioClick radiobtn event switch-id)
   (let ((selection (send radiobtn get-selection))
-        (switch-id-symbol (symbol->string switch-id)))
+        (switch-id-string (symbol->string switch-id)))
     (when selection
       (cond ((= selection 0)
-             ((nmbs 'verander-wisselstand!) switch-id-symbol 1)
+             ((nmbs 'verander-wisselstand!) switch-id 1)
              (new message%
-                  [label (string-append SWITCH_ID_LABEL switch-id-symbol SWITCH_CHANGED (send radiobtn get-item-label 0))]
+                  [label (string-append SWITCH_ID_LABEL switch-id-string SWITCH_CHANGED (send radiobtn get-item-label 0))]
                   [parent log-panel]))
             ((= selection 1)
-             ((nmbs 'verander-wisselstand!) switch-id-symbol 2)
+             ((nmbs 'verander-wisselstand!) switch-id 2)
              (new message%
-                  [label (string-append SWITCH_ID_LABEL switch-id-symbol SWITCH_CHANGED (send radiobtn get-item-label 1))]
+                  [label (string-append SWITCH_ID_LABEL switch-id-string SWITCH_CHANGED (send radiobtn get-item-label 1))]
                   [parent log-panel]))))))
 
 ; Het panel met de wissels vullen
@@ -147,11 +148,12 @@
         (define panel (new horizontal-panel% [parent detection-blocks-panel]
                            [alignment '(center top)]))
         (new message% 
-             [label (string-append DETECTION_BLOCK_ID_LABEL (symbol->string (car ids)) " --------> ")]
+             [label (string-append DETECTION_BLOCK_ID_LABEL (symbol->string (car ids)) "\t --------> \t")]
              [parent panel])
         (set! status-list (cons (new message% 
                                      [label NO_TRAIN_PRESENT]
                                      [parent panel]) status-list))
+        (send destination-list append (symbol->string (car ids)) (car ids))
         (iter (cdr ids))))
     (iter detection-block-ids)
     (set! status-list (reverse status-list))))
@@ -192,15 +194,46 @@
 (define panel (new horizontal-panel% [parent new-train-dialog]
                    [alignment '(center center)]))
 ; Twee knoppen
-(new button% [parent panel] [label "Annuleer"]
-     [callback (lambda (b e) (send new-train-dialog show #f))])
-(new button% [parent panel] [label "Bevestig"]
-     [callback (lambda (b e)(onClickConfirm (send id get-value)
-                                            (send direction get-value)
-                                            (send segment get-value))
-                 (add-to-trains-panel (send id get-value))
-                 (send new-train-dialog show #f))])
+(define cancelBtn (new button% [parent panel] [label "Annuleer"]
+                       [callback (lambda (b e) (send new-train-dialog show #f))]))
+(define confirmBtn (new button% [parent panel] [label "Bevestig"]
+                        [callback (lambda (b e)(onClickConfirm (send id get-value)
+                                                               (send direction get-value)
+                                                               (send segment get-value))
+                                    (add-to-trains-panel (send id get-value))
+                                    (send new-train-dialog show #f))]))
 
+
+; ======================= AUTOMATISCHE ROUTE STARTEN =======================
+
+(define (onClickStartRoute btn event)
+  (let ((train-id (send train-list get-data
+                        (car (send train-list get-selections))))
+        (destination (send destination-list get-data
+                           (car (send destination-list get-selections)))))
+    (send auto-route-dialog show #f)
+    ((nmbs 'bereken-traject) train-id destination)))
+
+; ======================= DIALOG - AUTOMATISCHE ROUTE =======================
+
+(define auto-route-dialog (new dialog%	 
+                               [label AUTOMATIC_ROUTE]	 
+                               [parent window]
+                               [width 300]	 
+                               [height 250]))
+
+(define train-list (new list-box%
+                        [label "Trein: "]
+                        [choices '()]
+                        [parent auto-route-dialog]))
+
+(define destination-list (new list-box%
+                              [label "Eindbestemming: "]
+                              [choices '()]
+                              [parent auto-route-dialog]))
+
+(define start-route-btn (new button% [parent auto-route-dialog] [label "Start traject"]
+                             [callback onClickStartRoute]))
 
 ; ======================= TREINEN TOEVOEGEN =======================
 
@@ -208,11 +241,8 @@
   (new message%
        [label ADDED_TRAIN_TO_TRACK]
        [parent log-panel])
+  (send train-list append id id)
   ((nmbs 'zet-trein-op-spoor) id direction segment))
-
-(define (onClickAddTrain btn event)
-  (send new-train-dialog show #t))
-
 
 ;; ======================= TAB LAYOUTS =======================
 
@@ -223,7 +253,11 @@
    (new button%
         [label ADD_TRAIN_LABEL]
         [parent tab-panel]
-        [callback onClickAddTrain])))
+        [callback (lambda (b e) (send new-train-dialog show #t))])
+   (new button%
+        [label AUTOMATIC_ROUTE]
+        [parent tab-panel]
+        [callback (lambda (b e) (send auto-route-dialog show #t))])))
 
 ; Layout voor het tablad 'Spoornetwerk'
 (define (tab-overzicht children-areas)

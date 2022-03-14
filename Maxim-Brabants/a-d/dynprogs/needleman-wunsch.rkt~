@@ -1,0 +1,63 @@
+#lang r6rs
+
+;-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-
+;-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-
+;-*-*                                                                 *-*-
+;-*-*               Longest Common Subsequence (Dyn Prog)             *-*-
+;-*-*                                                                 *-*-
+;-*-*                       Wolfgang De Meuter                        *-*-
+;-*-*                   2014  Software Languages Lab                  *-*-
+;-*-*                    Vrije Universiteit Brussel                   *-*-
+;-*-*                                                                 *-*-
+;-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-
+;-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-
+
+(library
+ (needleman-wunsch)
+ (export lcs)
+ (import (rnrs base)
+         (rnrs control)
+         (rnrs io simple)
+         (a-d scheme-tools))
+ 
+  ; S12 = similarity matrix; gap = gap penalty
+  (define (table rna1 rna2 S12 gap)
+    (define F (make-2D-vector (+ 1 (string-length rna1))
+                              (+ 1 (string-length rna2))
+                              (lambda (i j)
+                                (cond ((= i 0) (* d j))
+                                      ((= j 0) (* d i))
+                                      (else 0)))))
+    (do ((i 1 (+ i 1)))
+      ((> i (string-length rna1)) F)
+      (do ((j 1 (+ j 1)))
+        ((> j (string-length rna2)))
+        (let ((match (+ (ij? F (- i 1) (- j 1)) (S12 (string-ref rna1 (- i 1))
+                                                     (string-ref rna2 (- i 1)))))
+              (delete (+ gap (ij? F (- i 1) j)))
+              (insert (+ gap (ij? F i (- j 1)))))
+          (ij! (max match insert delete))))))
+ 
+  (define (needleman-wunsch rna1 rna2 S12 gap)
+   (define (read-rec i j)
+     (define s (ij? dir i j))
+     (cond ((or (= i 0) (= j 0))
+            "")
+           ((string=? (ij? dir i j) "<^")
+            (string-append (read-rec (- i 1) (- j 1))
+                           (string (string-ref str1 (- i 1)))))
+           ((string=? (ij? dir i j) " ^")
+            (read-rec (- i 1) j))
+           (else
+            (read-rec i (- j 1)))))
+   (read-rec (string-length str1) 
+             (string-length str2)))
+ 
+ (define (lcs str1 str2)
+   (define ts (tables str1 str2))
+   (read-lcs str1 str2 (cdr ts)))
+ 
+ (lcs "HUMAN" "CHIMPANZEE")
+ ;    ['H', 'M', 'A', 'N']
+ 
+ (lcs "ABCBDAB" "BDCABA" ))

@@ -1,0 +1,55 @@
+#lang r6rs
+
+;-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-
+;-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-
+;-*-*                                                                 *-*-
+;-*-*                  Disjoint Sets (Naive Version)                  *-*-
+;-*-*                                                                 *-*-
+;-*-*                       Wolfgang De Meuter                        *-*-
+;-*-*                   2009 Software Languages Lab                   *-*-
+;-*-*                    Vrije Universiteit Brussel                   *-*-
+;-*-*                                                                 *-*-
+;-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-
+;-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-
+
+(library
+ (disjoint-sets)
+ (export new disjoint-sets? find union! same-set?)
+ (import (rnrs base (6))
+         (rnrs control (6)))
+ 
+ (define disjoint-sets-tag 'naive-disjoint-sets)
+ 
+ (define (make size)
+   (cons disjoint-sets-tag (make-vector size 0)))
+ 
+ (define (set-identities sets)
+   (cdr sets))
+ 
+ (define (new size)
+   (define singletons (make size))
+   (define identities (set-identities singletons))
+   (let fill-singletons 
+     ((i 0))
+     (vector-set! identities i i)
+     (if (< (+ 1 i) size)
+       (fill-singletons (+ i 1))))
+   singletons)
+ 
+ (define same-set? =) 
+
+ (define (disjoint-sets? any)
+   (and (pair? any)
+        (eq? (car any) disjoint-sets-tag)))
+ 
+ (define (find sets nmbr)
+   (define identities (set-identities sets))
+   (vector-ref identities nmbr))
+ 
+ (define (union! sets set1 set2)
+   (define identities (set-identities sets))
+   (define size (vector-length identities))
+   (do ((i 0 (+ i 1)))
+     ((= i size) sets)
+     (if (= (vector-ref identities i) set1)
+       (vector-set! identities i set2)))))

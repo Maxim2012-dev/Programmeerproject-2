@@ -1,0 +1,1 @@
+("8.0" ta6le ("92d0fbac7399f74a9a95e22e03f7d57e744b5bf8" . "3031d9b0de75640be67afb4adf500a6807a97f7b") (collects #"a-d" #"disk" #"config.rkt") (collects #"errortrace" #"errortrace-key.rkt") (collects #"r6rs" #"lang" #"reader.rkt") (collects #"r6rs" #"main.rkt") (collects #"r6rs" #"private" #"prelims.rkt") (collects #"rnrs" #"base-6.rkt") (collects #"rnrs" #"bytevectors-6.rkt"))

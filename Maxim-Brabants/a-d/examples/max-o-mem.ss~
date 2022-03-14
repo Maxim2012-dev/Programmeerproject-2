@@ -1,0 +1,38 @@
+#lang r6rs
+
+;-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-
+;-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-
+;-*-*                                                                 *-*-
+;-*-*                            max-o-mem                            *-*-
+;-*-*                                                                 *-*-
+;-*-*                       Wolfgang De Meuter                        *-*-
+;-*-*                 2008 Programming Technology Lab                 *-*-
+;-*-*                   Vrije Universitent Brussel                    *-*-
+;-*-*                                                                 *-*-
+;-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-
+;-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-
+
+(library
+ (max-o-mem)
+ (export new max-o-mem? read write!)
+ (import (rnrs base (6))
+         (rnrs mutable-pairs))
+ 
+ (define max-o-mem-tag 'max-o-mem)
+ 
+ (define (new << init)
+   (list max-o-mem-tag << init))
+ 
+ (define (max-o-mem? any)
+   (and (pair? any)
+        (eq? (car any) max-o-mem-tag)))
+ 
+ (define (read mom)
+   (caddr mom))
+ 
+ (define (write! mom new-value)
+   (define << (cadr mom))
+   (define value (caddr mom))
+   (if (<< value new-value)
+     (set-car! (cddr mom) new-value))
+   mom))

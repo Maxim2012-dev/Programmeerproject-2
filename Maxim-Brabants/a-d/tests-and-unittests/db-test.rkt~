@@ -1,0 +1,148 @@
+#lang r6rs
+
+;-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-
+;-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-
+;-*-*                                                                 *-*-
+;-*-*                    Relational Database Tests                    *-*-
+;-*-*                                                                 *-*-
+;-*-*                       Wolfgang De Meuter                        *-*-
+;-*-*                   2010  Software Languages Lab                  *-*-
+;-*-*                    Vrije Universiteit Brussel                   *-*-
+;-*-*                                                                 *-*-
+;-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-
+;-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-
+
+(import (prefix (a-d disk disk) disk:)
+        (prefix (a-d disk file-system) unix:)
+        (prefix (a-d db database) db:)
+        (prefix (a-d db table fixed-size-slots schema) scma:)
+        (prefix (a-d db table fixed-size-slots table) tbl:)
+        (prefix (a-d db rcid) rcid:)
+        (a-d file constants)
+        (rnrs base)
+        (rnrs control)
+        (rnrs io simple)
+        (a-d scheme-tools))
+ 
+(define my-computer (disk:new "HardDisk"))
+
+(unix:format! my-computer)
+
+(define disk-size (unix:df my-computer))
+
+(define zonnestelsel (db:new my-computer "Zonnestelsel"))
+
+; *** Manenschema ***
+
+(define :maan-naam:       0)
+(define :planeet:         1)
+(define :maan-middellijn: 2)
+(define :ontdekjaar:      3)
+(define :ontdekker:       4)
+(define manenschema  '((string  9) ; naam maan
+                       (string  9) ; naam planeet
+                       (natural 2) ; middellijn
+                       (natural 2) ; ontdekjaar
+                       (string 10) ; ontdekker
+                       ))
+
+(define manen (db:create-table zonnestelsel "Manen" manenschema))
+
+; *** Planetenschema ***
+
+(define :planeet-naam:    0)
+(define :afstand-tot-zon: 1)
+(define :aard-massa:      2)
+(define :middellijn:      3)
+(define :omlooptijd:      4)
+(define :rotatietijd:     5)
+(define planetenschema '((string  9); naam
+                         (decimal)  ; afstand tot de zon
+                         (decimal)  ; aard-massa
+                         (natural 3); middellijn
+                         (decimal)  ; omlooptijd aardjaar
+                         (decimal)  ; rotatietijd aarddag
+                         ))
+
+(define planeten (db:create-table zonnestelsel "Planeten" planetenschema))
+
+
+(db:create-index! zonnestelsel planeten "Naam-IDX"   :planeet-naam:)
+(db:create-index! zonnestelsel planeten "Omloop-IDX" :omlooptijd:)
+
+(db:insert-into-table! zonnestelsel planeten (list "Mercurius" 0.3871   0.053   4840   0.241  +58.79))
+(db:insert-into-table! zonnestelsel planeten (list "Venus"     0.7233   0.815  12200   0.615 -243.68))
+(db:insert-into-table! zonnestelsel planeten (list "Aarde"     1.0000   1.000  12756   1.000   +1.00))
+(db:insert-into-table! zonnestelsel planeten (list "Mars"      1.5237   0.109   6790   1.881   +1.03))
+(db:insert-into-table! zonnestelsel planeten (list "Jupiter"   5.2028 317.900 142800  11.862   +0.41))
+(db:insert-into-table! zonnestelsel planeten (list "Saturnus"  9.5388  95.100 119300  29.458   +0.43))
+(db:insert-into-table! zonnestelsel planeten (list "Uranus"   19.1819  14.500  47100  84.013   -0.45))
+(db:insert-into-table! zonnestelsel planeten (list "Neptunus" 30.0578  17.500  44800 164.793   +0.63))
+(db:insert-into-table! zonnestelsel planeten (list "Pluto"    39.2975   1.000   5000 248.430   +0.26))
+
+(db:create-index! zonnestelsel manen "Planeet-IDX" :planeet:)
+
+(db:insert-into-table! zonnestelsel manen (list "Maan"      "Aarde"    3476    0 ""))
+(db:insert-into-table! zonnestelsel manen (list "Phobos"    "Mars"       22 1877 "Hall"))
+(db:insert-into-table! zonnestelsel manen (list "Deimos"    "Mars"        8 1610 "Hall"))
+(db:insert-into-table! zonnestelsel manen (list "Io"        "Jupiter"  3550 1610 "Galilei"))
+(db:insert-into-table! zonnestelsel manen (list "Europa"    "Jupiter"  3100 1610 "Galilei"))
+(db:insert-into-table! zonnestelsel manen (list "Ganymedes" "Jupiter"  5600 1610 "Galilei"))
+(db:insert-into-table! zonnestelsel manen (list "Callisto"  "Jupiter"  5050 1610 "Galilei"))
+(db:insert-into-table! zonnestelsel manen (list "Mimas"     "Saturnus"  520 1789 "Herschel"))
+(db:insert-into-table! zonnestelsel manen (list "Enceladus" "Saturnus"  600 1789 "Herschel"))
+(db:insert-into-table! zonnestelsel manen (list "Tethys"    "Saturnus" 1200 1684 "Cassini"))
+(db:insert-into-table! zonnestelsel manen (list "Dione"     "Saturnus" 1300 1684 "Cassini"))
+(db:insert-into-table! zonnestelsel manen (list "Rhea"      "Saturnus" 1300 1672 "Cassini"))
+(db:insert-into-table! zonnestelsel manen (list "Titan"     "Saturnus" 4950 1655 "Huygens"))
+(db:insert-into-table! zonnestelsel manen (list "Hyperion"  "Saturnus"  400 1848 "Bond"))
+(db:insert-into-table! zonnestelsel manen (list "Japetus"   "Saturnus" 1200 1671 "Cassini"))
+(db:insert-into-table! zonnestelsel manen (list "Phoebe"    "Saturnus"  300 1898 "Pickering"))
+(db:insert-into-table! zonnestelsel manen (list "Janus"     "Saturnus"  350 1966 "Dolfus"))
+(db:insert-into-table! zonnestelsel manen (list "Ariel"     "Uranus"    600 1851 "Lassell"))
+(db:insert-into-table! zonnestelsel manen (list "Umbriel"   "Uranus"    400 1851 "Lassell"))
+(db:insert-into-table! zonnestelsel manen (list "Titania"   "Uranus"   1000 1787 "Herschel"))
+(db:insert-into-table! zonnestelsel manen (list "Oberon"    "Uranus"    800 1787 "Herschel"))
+(db:insert-into-table! zonnestelsel manen (list "Miranda"   "Uranus"    100 1948 "Kuiper"))
+(db:insert-into-table! zonnestelsel manen (list "Triton"    "Neptunus" 4000 1846 "Lassell"))
+(db:insert-into-table! zonnestelsel manen (list "Nereide"   "Neptunus"  300 1949 "Kuiper"))
+
+(newline)(display "A test without index => enumerate all tuples: ")
+(display "SELECT * FROM manen WHERE ⨴ontdekker⨵ = 'Cassini' ")(newline)(newline)
+(display (db:select-from/eq zonnestelsel manen :ontdekker: "Cassini"))(newline)
+
+(newline)(display "A test with index => use B-tree: ")
+(display "SELECT * FROM manen WHERE ⨴planeet⨵ = 'Saturnus' ")(newline)(newline)
+(display (db:select-from/eq zonnestelsel manen :planeet: "Saturnus"))(newline)
+
+
+(db:print zonnestelsel)
+
+(display "----------------------")(newline)
+
+(tbl:print planeten)
+
+(display "----------------------")(newline)
+
+(tbl:print manen)
+
+(define manual-delete? #f)
+(cond (manual-delete?
+       (db:delete-where! zonnestelsel manen :planeet: "Aarde")
+       (db:delete-where! zonnestelsel planeten :planeet-naam: "Neptunus")
+       (db:delete-where! zonnestelsel planeten :planeet-naam: "Uranus")
+       (db:delete-where! zonnestelsel planeten :planeet-naam: "Pluto")
+       (db:delete-where! zonnestelsel planeten :omlooptijd: 1.881)
+       (db:delete-where! zonnestelsel planeten :omlooptijd: 11.862)
+       (db:delete-where! zonnestelsel planeten :omlooptijd: 29.458)
+       (db:drop-table! zonnestelsel manen)
+       (db:drop-table! zonnestelsel planeten))
+      (else
+       (db:drop-table! zonnestelsel manen)
+       (db:drop-table! zonnestelsel planeten)))
+(display "Deleting...")
+(db:delete! zonnestelsel)
+
+(display "DONE")
+(if (not (= disk-size (unix:df my-computer)))
+    (error "Memory leackage!" disk-size (unix:df my-computer)))

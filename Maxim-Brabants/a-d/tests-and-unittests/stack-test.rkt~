@@ -1,0 +1,53 @@
+#lang r6rs
+
+;-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-
+;-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-
+;-*-*                                                                 *-*-
+;-*-*                          Stacks Tests                           *-*-
+;-*-*                                                                 *-*-
+;-*-*                       Wolfgang De Meuter                        *-*-
+;-*-*                 2008 Programming Technology Lab                 *-*-
+;-*-*                   Vrije Universiteit Brussel                    *-*-
+;-*-*                                                                 *-*-
+;-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-
+;-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-
+
+(import (except (rnrs base) length)
+        (a-d stack linked)
+        ;(a-d stack vectorial)
+        (only (scheme base) require planet))
+
+(require (planet schematics/schemeunit:3/test))
+
+(define s (new))
+
+(check-equal? (empty? s) #t)
+
+(push! s 10)
+
+(check-equal? (empty? s) #f)
+(push! s 20)
+(push! s 30)
+
+(define t (top s))
+
+(check-equal? t 30)
+
+(define t3 (pop! s))
+(define t2 (pop! s))
+(define t1 (pop! s))
+
+(check-equal? t3 30)
+(check-equal? t2 20)
+(check-equal? t1 10)
+
+(check-equal? (empty? s) #t)
+(check-equal? (full? s) #f)
+(push! (push! (push! (push! (push! s 0) 1) 2) 3) 4)
+(push! (push! (push! (push! s 5) 6) 7) 8)
+(check-equal? (full? s) #f)
+(push! s "last")
+(if (eq? (car s) 'vectorial-stack)
+  (check-equal? (full? s) #t))
+(pop! s)
+(check-equal? (full? s) #f)

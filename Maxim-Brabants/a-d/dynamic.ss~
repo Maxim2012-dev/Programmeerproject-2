@@ -1,0 +1,126 @@
+#lang r6rs
+(import (rnrs base) (rnrs io simple)
+        (a-d graph unweighted config)
+        (a-d graph examples directed-unweighted)
+        (a-d scheme-tools)
+       ; (a-d graph-algorithms directed traclo-unweighted)
+        (a-d graph-algorithms directed basic))
+    
+(define s1 sedgewick172)
+(define s2 (copy s1))
+(define s3 (copy s1))
+
+(define (make-matrix n v)
+  (define vct (make-vector n))
+  (vector-map!
+   vct
+   (lambda (idx _) (display idx)
+     (make-vector n v)))
+  vct)
+(define (ij? v i j)
+  (vector-ref (vector-ref v i) j))
+(define (ij! v i j a)
+  (vector-set! (vector-ref v i) j a))
+                
+(define (print g)
+  (for-each-node
+   g
+   (lambda (from)
+     (for-each-edge
+      g
+      from
+      (lambda (to)
+        (display (list from "->" to))
+        (newline))))))
+
+(define (dup c n) (if (= n 0) "" (string-append c (dup c (- n 1)))))
+
+(define (traclo-recursive g)
+  (define n (- (order g) 1))
+  (define (rec from to via)
+    (display (list (dup " " (- n via)) from to "/" via))(newline)
+    (if (= -1 via)
+      (adjacent? g from to)
+      (or (rec from to  (- via 1))
+          (and (rec from via (- via 1))
+               (rec via  to  (- via 1))))))
+  (define res (make-matrix (order g) #f))
+  (for-each-node
+   g
+   (lambda (from)
+     (for-each-node
+      g
+      (lambda (to)
+        (ij! res from to (rec from to n))))))
+  res)
+
+(define (traclo-memoize g)
+  (define n (- (order g) 1))
+  (define (rec from to via)
+    (if (not (null? (ij? res from to)))
+      (ij? res from to)
+      (begin
+        (display (list (dup "_" (- n via)) from to "/" via))(newline)
+        (let ((tst (if (= -1 via)
+                     (adjacent? g from to)
+                     (or (rec from to (- via 1))
+                         (and (rec from via (- via 1))
+                              (rec via  to  (- via 1)))))))
+          (ij! res from to tst)
+          tst))))
+  (define res (make-matrix (order g) ()))
+  (for-each-node
+   g
+   (lambda (from)
+     (for-each-node
+      g
+      (lambda (to)
+        (ij! res from to (rec from to n))))))
+  res)
+
+ (define (traclo-warshall g)
+   (define res (make-matrix (order g) #f))
+   (for-each-node
+    g
+    (lambda (from)
+      (for-each-node
+       g
+       (lambda (to)
+         (if (adjacent? g from to)
+           (ij! res from to #t))))))
+   (for-each-node
+    g
+    (lambda (via)
+      (for-each-node
+       g
+       (lambda (from)
+         (for-each-node
+          g
+          (lambda (to)
+            (if (or (ij? res from to)
+                    (and (ij? res from via)
+                         (ij? res via to)))
+              (ij! res from to #t))))))))
+   res)
+
+(define m1 (traclo-warshall  s1))
+(display "----------------------")(newline)
+(define m2 (traclo-recursive s2))
+(display "----------------------")(newline)
+(define m3 (traclo-memoize   s3))
+
+(define (compare g1 g2)
+  (call-with-current-continuation
+   (lambda (exit)
+     (for-each-node
+      g1
+      (lambda (from)
+        (for-each-node
+         g1
+         (lambda (to)
+           (define a1 (adjacent? g1 from to))
+           (define a2 (adjacent? g2 from to))
+           (display (list from to))
+           (if (or (and a1 (not a2)) (and a2 (not a1)))
+             (exit #f))))))
+     #t)))
