@@ -217,7 +217,7 @@
 ; ======================= DIALOG - AUTOMATISCHE ROUTE =======================
 
 (define auto-route-dialog (new dialog%	 
-                               [label AUTOMATIC_ROUTE]	 
+                               [label AUTOMATIC_ROUTE]
                                [parent window]
                                [width 300]	 
                                [height 250]))

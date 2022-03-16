@@ -73,6 +73,7 @@
              (to (geef-vector-index destination)))
         (shortest-path spoornetwerk from to)))
 
+    ;; geeft de index van gegeven detectieblok in componentenvector
     (define (geef-vector-index detectieblok)
       (let iter
         ((idx 0))

@@ -1,1 +1,0 @@
-("8.0" ta6le ("81b33c82d6be5e53ab87c1f1f6ec11cd0ea15c48" . "5d638520f3fc513315fc86f2082935d701fb4aaf") (collects #"errortrace" #"errortrace-key.rkt") (collects #"r6rs" #"lang" #"reader.rkt") (collects #"r6rs" #"main.rkt") (collects #"r6rs" #"private" #"prelims.rkt") (collects #"rnrs" #"base-6.rkt") (collects #"rnrs" #"mutable-pairs-6.rkt") (collects #"srfi" #"%3a9.rkt"))

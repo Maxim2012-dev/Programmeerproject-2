@@ -1,0 +1,11 @@
+#lang r6rs
+
+(provide 
+
+(define (next-line-it file)
+  (let ((line (read-line file 'any)))
+    (unless (eof-object? line)
+      (displayln line)
+      (next-line-it file))))
+
+(call-with-input-file "file" next-line-it)
