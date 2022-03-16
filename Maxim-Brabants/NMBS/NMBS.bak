@@ -5,6 +5,9 @@
 (require "wissel-adt.rkt")
 (require "spoornetwerk-adt.rkt")
 
+(require "a-d/graph/unweighted/config.rkt")
+(require "a-d/graph-algorithms/undirected/bft-applications.rkt")
+
 (provide maak-nmbs)
 
 (define SNELHEIDSVERANDERING 20)
@@ -13,6 +16,27 @@
 (define (maak-nmbs)
   (let ((spoor (maak-spoornetwerk)))
 
+    ;; vector met spoorcomponenten
+    (define componenten (vector 'S2 'D1 'D2 'D3 'D4 'D5 'D6 'D7 'D8 'D9 'S1 'S3))
+
+    ;; graafrepresentatie van spooropstelling
+    ;; (we zien de detectieblokken en de wissels als nodes)
+    (define spoornetwerk
+      (let ((g (new #f 12)))
+        (add-edge! g 0 1)
+        (add-edge! g 0 6)
+        (add-edge! g 0 7)
+        (add-edge! g 1 2)
+        (add-edge! g 2 3)
+        (add-edge! g 3 4)
+        (add-edge! g 4 10)
+        (add-edge! g 10 5)
+        (add-edge! g 5 6)
+        (add-edge! g 10 11)
+        (add-edge! g 11 8)
+        (add-edge! g 8 9)
+        (add-edge! g 11 7)
+        g))
 
     ;; (functionaliteit voor de simulator)
     (define (zet-trein-op-spoor! id richting segment)
@@ -42,6 +66,18 @@
             (aanwezige-treinen (spoor 'aanwezige-treinen)))
         ((aanwezige-treinen 'snelheid-trein) id-symbol)))
 
+    ;; berekent een traject voor trein met 'id' naar 'destination'
+    ;; en voert deze automatisch uit.
+    (define (bereken-traject id destination)
+      (let ((path (
+
+    (define (geef-aanwezige-treinen)
+      (spoor 'aanwezige-treinen))
+
+    (define (geef-trein-ids)
+      (map (lambda (el) (el 'trein-id))
+           ((spoor 'aanwezige-treinen) 'reeks)))
+
     (define (geef-wissel-ids)
       (spoor 'wissel-ids))
 
@@ -56,7 +92,10 @@
             ((eq? msg 'verhoog-snelheid-trein!) verhoog-snelheid-trein!)
             ((eq? msg 'verlaag-snelheid-trein!) verlaag-snelheid-trein!)
             ((eq? msg 'geef-snelheid-trein) geef-snelheid-trein)
+            ((eq? msg 'bereken-traject) bereken-traject)
             ((eq? msg 'geef-wissel-ids) geef-wissel-ids)
+            ((eq? msg 'geef-aanwezige-treinen) geef-aanwezige-treinen)
+            ((eq? msg 'geef-trein-ids) geef-trein-ids)
             ((eq? msg 'geef-detectieblok-ids) geef-detectieblok-ids)
             ((eq? msg 'verander-wisselstand!) verander-wisselstand!)
             (else (display "foute boodschap - INFRABEL"))))

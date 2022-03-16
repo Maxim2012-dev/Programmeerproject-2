@@ -241,7 +241,7 @@
   (new message%
        [label ADDED_TRAIN_TO_TRACK]
        [parent log-panel])
-  (send train-list append id (string->symbol id))
+  (send train-list append id id)
   ((nmbs 'zet-trein-op-spoor) id direction segment))
 
 ;; ======================= TAB LAYOUTS =======================
