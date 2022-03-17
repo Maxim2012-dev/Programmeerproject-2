@@ -5,7 +5,7 @@
 (require "wissel-adt.rkt")
 (require "spoornetwerk-adt.rkt")
 
-(require "a-d/graph/unweighted/config.rkt")
+(require "a-d/graph/unweighted/adjacency-matrix.rkt")
 (require "a-d/graph-algorithms/undirected/bft-applications.rkt")
 
 (provide maak-nmbs)
