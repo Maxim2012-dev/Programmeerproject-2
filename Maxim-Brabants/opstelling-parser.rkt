@@ -1,12 +1,10 @@
 #lang racket
 
-(define in (open-input-file "loop-switches.txt"))
+(provide start-parser)
 
-;; aantal componenten inlezen en gebruiken als vector-size
-(define components (make-vector (string->number (read-line in 'any))))
 
-(define (read-formation file)
-  (define size (string->number (read-line file 'any)))
+(define (read-formation file components)
+  (define size (vector-length components))
   ;; componenten + index in vector
   (define (read-components file size)
     (unless (<= size 0)
@@ -25,5 +23,12 @@
   (read-components file size)
   (read-relations file))
 
-(call-with-input-file "loop-switches.txt" read-formation)
-(close-input-port in)
+;; ontvangt naam van tekstbestand en opent een filestream ermee
+;; + start uitlezen van opstelling
+(define (start-parser filename)
+  (define in (open-input-file (string-append filename ".txt")))
+  ;; aantal componenten inlezen en gebruiken als vector-size
+  (define components (make-vector (read in)))
+  (read-formation in components)
+  (close-input-port in))
+

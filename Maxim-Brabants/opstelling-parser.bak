@@ -9,9 +9,9 @@
   (define size (string->number (read-line file 'any)))
   ;; componenten + index in vector
   (define (read-components file size)
-    (let* ((index (read file))
-           (component (read file)))
-      (unless (<= size 0)
+    (unless (<= size 0)
+      (let* ((index (read file))
+             (component (read file)))
         (display index) (display " ") (display component)(newline)
         (vector-set! components index component)
         (read-components file (- size 1)))))

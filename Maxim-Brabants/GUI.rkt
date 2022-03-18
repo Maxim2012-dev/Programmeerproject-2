@@ -2,8 +2,8 @@
 
 (require racket/gui/base)
 (require "simulator/interface.rkt")
-(require "INFRABEL/INFRABEL.rkt")
 (require "NMBS/NMBS.rkt")
+(require "opstelling-parser.rkt")
 
 ;; ======================= STRING CONSTANTS =======================
 
@@ -256,17 +256,15 @@
                                      [width 300]	 
                                      [height 250]))
 
-(new message%
-     [label FORMATION]
-     [parent choose-formation-dialog]
-     [min-width 100]
-     [min-height 50])
+(define choose-formation (new message%
+                              [label FORMATION]
+                              [parent choose-formation-dialog]
+                              [min-width 100]
+                              [min-height 40]))
 
-(define standard-formation (new button% [parent choose-formation-dialog] [label "Standaard opstelling"]
-                              [callback setup-procedure]))
 (define custom-formation (new text-field% [parent choose-formation-dialog] [label CUSTOM_FORMATION]))
 (define confirm (new button% [parent choose-formation-dialog] [label "Bevestig"]
-                     [callback (lambda (b e) (setup-procedure))]))
+                     [callback (lambda (b e) (start-parser (send custom-formation get-value)))]))
 
 ;; ======================= TAB LAYOUTS =======================
 
@@ -281,7 +279,11 @@
    (new button%
         [label AUTOMATIC_ROUTE]
         [parent tab-panel]
-        [callback (lambda (b e) (send auto-route-dialog show #t))])))
+        [callback (lambda (b e) (send auto-route-dialog show #t))])
+   (new button%
+        [label CHOOSE_FORMATION]
+        [parent tab-panel]
+        [callback (lambda (b e) (send choose-formation-dialog show #t))])))
 
 ; Layout voor het tablad 'Spoornetwerk'
 (define (tab-overzicht children-areas)
@@ -309,20 +311,19 @@
   (list
    log-panel))
 
-
+;; ===============================================================
 ;; ======================= SETUP PROCEDURE =======================
+;; ===============================================================
+
 ;; Start de interface (toont spoornetwerk + GUI)
 
-(send choose-formation-dialog show #t)
+(setup-loop-and-switches)
+(start)
+
 (define nmbs (maak-nmbs))
 
-(define (setup-procedure)
-  (send choose-formation-dialog show #f)
-  (setup-loop-and-switches)
-  (start)
-
-  (send window show #t)
-  (fill-tab-content tab-panel)
-  (fill-switches-panel)
-  (fill-detection-blocks-panel))
+(send window show #t)
+(fill-tab-content tab-panel)
+(fill-switches-panel)
+(fill-detection-blocks-panel)
 

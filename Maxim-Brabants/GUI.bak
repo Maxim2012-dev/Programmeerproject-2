@@ -17,6 +17,9 @@
 (define ADD_TRAIN_LABEL "Voeg trein toe")
 (define NEW_TRAIN_TITLE "Nieuwe trein")
 (define AUTOMATIC_ROUTE "Automatisch traject")
+(define CHOOSE_FORMATION "Opstelling kiezen")
+(define CUSTOM_FORMATION "Geef bestand met opstelling: ")
+(define FORMATION "Kies een opstelling")
 (define ADDED_TRAIN_TO_TRACK "Nieuwe trein toegevoegd aan spoor")
 (define SPEED_TRAIN_INCREASED "Snelheid verhoogd van trein met ID: ")
 (define SPEED_TRAIN_DECREASED "Snelheid verlaagd van trein met ID: ")
@@ -244,6 +247,27 @@
   (send train-list append id (string->symbol id))
   ((nmbs 'zet-trein-op-spoor) id direction segment))
 
+
+; ======================= DIALOG - OPSTELLING KIEZEN =======================
+
+(define choose-formation-dialog (new dialog%	 
+                                     [label CHOOSE_FORMATION]
+                                     [parent window]
+                                     [width 300]	 
+                                     [height 250]))
+
+(new message%
+     [label FORMATION]
+     [parent choose-formation-dialog]
+     [min-width 100]
+     [min-height 50])
+
+(define standard-formation (new button% [parent choose-formation-dialog] [label "Standaard opstelling"]
+                              [callback setup-procedure]))
+(define custom-formation (new text-field% [parent choose-formation-dialog] [label CUSTOM_FORMATION]))
+(define confirm (new button% [parent choose-formation-dialog] [label "Bevestig"]
+                     [callback (lambda (b e) (setup-procedure))]))
+
 ;; ======================= TAB LAYOUTS =======================
 
 
@@ -289,13 +313,16 @@
 ;; ======================= SETUP PROCEDURE =======================
 ;; Start de interface (toont spoornetwerk + GUI)
 
-(setup-loop-and-switches)
-(start)
-
+(send choose-formation-dialog show #t)
 (define nmbs (maak-nmbs))
 
-(send window show #t)
-(fill-tab-content tab-panel)
-(fill-switches-panel)
-(fill-detection-blocks-panel)
+(define (setup-procedure)
+  (send choose-formation-dialog show #f)
+  (setup-loop-and-switches)
+  (start)
+
+  (send window show #t)
+  (fill-tab-content tab-panel)
+  (fill-switches-panel)
+  (fill-detection-blocks-panel))
 
