@@ -1,10 +1,12 @@
 #lang racket
 
+(require "simulator/railway.rkt")
 (provide start-parser)
 
 
 (define (read-formation file components)
   (define size (vector-length components))
+  (define connections '())
   ;; componenten + index in vector
   (define (read-components file size)
     (unless (<= size 0)
@@ -19,9 +21,11 @@
           (to (read file)))
       (unless (eof-object? from)
         (display from)(display " verbonden met ")(display to)(newline)
+        (set! connections (cons (cons from to) connections))
         (read-relations file))))
   (read-components file size)
-  (read-relations file))
+  (read-relations file)
+  (load-custom-setup components connections))
 
 ;; ontvangt naam van tekstbestand en opent een filestream ermee
 ;; + start uitlezen van opstelling

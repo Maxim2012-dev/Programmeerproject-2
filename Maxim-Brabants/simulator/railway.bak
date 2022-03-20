@@ -13,7 +13,7 @@
 
 (require "tracks.rkt")
 
-(provide RAILWAY remove-all-tracks setup-hardware setup-straight setup-straight-with-switch setup-loop setup-loop-and-switches load-custom-setup)
+(provide RAILWAY remove-all-tracks setup-hardware setup-straight setup-straight-with-switch setup-loop setup-loop-and-switches)
 
 (define RAILWAY #f)
 
@@ -101,45 +101,8 @@
 
 
 ;; ************************ ;;
-;;     LOAD CUSTOM SETUP    ;;
+;;      LOAD CUSTOM SETUP      ;;
 ;; ************************ ;;
-
-(define (load-custom-setup components connections)
-  (remove-all-tracks)
-  (define SEGMENTS '())
-  (define SWITCHES '())
-  (define DETECTION-BLOCKS '())
-
-  (define assoc-list '())
-  
-  (for ([i components])
-    (let ((str (symbol->string i)))
-      (cond ((eq? (string-ref str 0) 'D)
-             (define track (make-object block% i (list G231 G231 G231 G231 G231)))
-             (set! assoc-list (cons (cons i track) assoc-list))
-             (set! SEGMENTS (cons track SEGMENTS))
-             (set! DETECTION-BLOCKS (cons track DETECTION-BLOCKS)))
-            ((eq? (string-ref str 0) 'S)
-             (define track (make-object switch% i WL))
-             (set! assoc-list (cons (cons i track) assoc-list))
-             (set! SWITCHES (cons track SWITCHES)))
-            (else (set! SEGMENTS (cons i SEGMENTS))))))
-
-  (for ([i connections])
-    (let ((first (cadr (assoc (caar connections) assoc-list)))
-          (second (cadr (assoc (cdar connections) assoc-list))))
-      (cond ((eq? (string-ref str 0) 'D)
-             (connect (end  first  ) (start second ))
-            ((eq? (string-ref str 0) 'S)
-             (set! SWITCHES (cons i SWITCHES)))
-            (else (set! SEGMENTS (cons i SEGMENTS))))))
-
-  (for-each (lambda (block)
-              (send block set-color 'blue))
-            DETECTION-BLOCKS)
-  
-  (set! RAILWAY (make-object railway% SEGMENTS SWITCHES DETECTION-BLOCKS)))
-  
 
 ;; ************************ ;;
 ;;      SETUP HARDWARE      ;;
