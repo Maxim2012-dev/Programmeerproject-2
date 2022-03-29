@@ -1,4 +1,4 @@
-!o#lang racket
+#lang racket
 
 (require racket/gui/base)
 (require "simulator/interface.rkt")
