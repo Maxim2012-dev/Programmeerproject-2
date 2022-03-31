@@ -106,7 +106,6 @@
 
 (define (load-custom-setup components connections piko-tracks)
   (remove-all-tracks)
-  (stop)
   (define SEGMENTS '())
   (define SWITCHES '())
   (define DETECTION-BLOCKS '())
@@ -145,8 +144,7 @@
               (send block set-color 'blue))
             DETECTION-BLOCKS)
   
-  (set! RAILWAY (make-object railway% SEGMENTS SWITCHES DETECTION-BLOCKS))
-  (start))
+  (set! RAILWAY (make-object railway% SEGMENTS SWITCHES DETECTION-BLOCKS)))
   
 
 ;; ************************ ;;

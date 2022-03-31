@@ -20,9 +20,9 @@
         (read-components file (- size 1)))))
   ;; relaties tussen componenten
   (define (read-relations file)
-    (unless (eof-object? (read file))
-      (let ((from (vector-ref components (read file)))
-            (to (vector-ref components (read file))))
+    (let ((from (vector-ref components (read file)))
+          (to (vector-ref components (read file))))
+      (unless (eof-object? from)
         (set! connections (cons (cons from to) connections))
         (read-relations file))))
   (read-components file size)
