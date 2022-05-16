@@ -131,7 +131,7 @@
             (remp (lambda (lit)
                     (let ((antecedents (get-lit-antecedents lit interpret)))
                       ;; if literal was propagated and thus has antecedents
-                      (display antecedents)(newline)
+                      (display "----------------->")(display (variable lit))(newline)
                       (if antecedents
                           (let loop
                             ((lst (cdr antecedents)))
