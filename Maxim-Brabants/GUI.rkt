@@ -96,10 +96,10 @@
            [callback (lambda (b e)(new message%
                                        [label (string-append SPEED_TRAIN_INCREASED train-id)]
                                        [parent log-panel])
-                       ((nmbs 'verhoog-snelheid-trein!) train-id)
-                       (send speed set-label (number->string ((nmbs 'geef-snelheid-trein) train-id))))])
+                       (nmbs 'verhoog-snelheid-trein! train-id)
+                       (send speed set-label (number->string (nmbs 'geef-snelheid-trein train-id))))])
       (define speed (new message%
-                         [label (number->string ((nmbs 'geef-snelheid-trein) train-id))]
+                         [label (number->string (nmbs 'geef-snelheid-trein train-id))]
                          [parent panel]
                          [horiz-margin 50]
                          [auto-resize #t]))
@@ -107,8 +107,8 @@
            [callback (lambda (b e)(new message%
                                        [label (string-append SPEED_TRAIN_DECREASED train-id)]
                                        [parent log-panel])
-                       ((nmbs 'verlaag-snelheid-trein!) train-id)
-                       (send speed set-label (number->string ((nmbs 'geef-snelheid-trein) train-id))))]))
+                       (nmbs 'verlaag-snelheid-trein! train-id)
+                       (send speed set-label (number->string (nmbs 'geef-snelheid-trein train-id))))]))
 
 
     ; Wanneer op een radiobutton wordt geklikt (switches)
@@ -117,12 +117,12 @@
             (switch-id-string (symbol->string switch-id)))
         (when selection
           (cond ((= selection 0)
-                 ((nmbs 'verander-wisselstand!) switch-id 1)
+                 (nmbs 'verander-wisselstand! switch-id 1)
                  (new message%
                       [label (string-append SWITCH_ID_LABEL switch-id-string SWITCH_CHANGED (send radiobtn get-item-label 0))]
                       [parent log-panel]))
                 ((= selection 1)
-                 ((nmbs 'verander-wisselstand!) switch-id 2)
+                 (nmbs 'verander-wisselstand! switch-id 2)
                  (new message%
                       [label (string-append SWITCH_ID_LABEL switch-id-string SWITCH_CHANGED (send radiobtn get-item-label 1))]
                       [parent log-panel]))))))
@@ -166,8 +166,8 @@
         (when (not (null? ids))
           ; over alle treinen gaan
           (let trains-iter
-            ((train-series ((nmbs 'geef-aanwezige-treinen)))
-             (trains (((nmbs 'geef-aanwezige-treinen)) 'reeks)))
+            ((train-series (nmbs 'geef-aanwezige-treinen))
+             (trains ((nmbs 'geef-aanwezige-treinen) 'reeks)))
             (when (not (null? trains))
               ; Als id van detectieblok waar trein aanwezig is, gelijk is aan huidig detectieblok-id
               (if (eq? ((train-series 'detectieblok-trein) ((car trains) 'trein-id))
@@ -212,7 +212,7 @@
             (destination (send destination-list get-data
                                (car (send destination-list get-selections)))))
         (send auto-route-dialog show #f)
-        ((nmbs 'bereken-traject) train-id destination)))
+        (nmbs 'bereken-traject train-id destination)))
 
     ; ======================= DIALOG - AUTOMATISCHE ROUTE =======================
 
@@ -242,7 +242,7 @@
            [label ADDED_TRAIN_TO_TRACK]
            [parent log-panel])
       (send train-list append id (string->symbol id))
-      ((nmbs 'zet-trein-op-spoor) id direction segment))
+      (nmbs 'zet-trein-op-spoor id direction segment))
 
 
     ; ======================= DIALOG - OPSTELLING KIEZEN =======================
@@ -310,15 +310,13 @@
 
     ; toont venster met alle inhoud
     (define (start-gui)
-      (setup-loop-and-switches)
-      (start)
       (send window show #t)
       (fill-tab-content tab-panel))
 
-    (define (dispatch-gui msg)
-      (cond ((eq? msg 'start) start-gui)
-            ((eq? msg 'teken-wissel-panel) teken-wissel-panel)
-            ((eq? msg 'teken-detectieblok-panel) teken-detectieblok-panel)
+    (define (dispatch-gui msg . args)
+      (cond ((eq? msg 'start) (start-gui))
+            ((eq? msg 'teken-wissel-panel) (teken-wissel-panel (car args)))
+            ((eq? msg 'teken-detectieblok-panel) (teken-detectieblok-panel (car args)))
             ((eq? msg 'refresh-detection-blocks) refresh-detection-blocks)
             (else (display "wrong message gui"))))
     dispatch-gui))

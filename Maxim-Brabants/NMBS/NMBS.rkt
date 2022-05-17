@@ -15,10 +15,8 @@
 
 ;; Dit draait op onze computer zelf
 (define (maak-nmbs)
-  (let ((GUI (maak-gui dispatch-nmbs))
-        (spoor (maak-spoornetwerk)))
+  (let ((spoor (maak-spoornetwerk)))
 
-    
 
     ;; vector met spoorcomponenten
     (define componenten (vector 'S2 'D1 'D2 'D3 'D4 'D5 'D6 'D7 'D8 'D9 'S1 'S3))
@@ -102,16 +100,22 @@
     (define (verander-wisselstand! id stand)
       ((spoor 'wijzig-stand-switch!) id stand))
 
-    (define (dispatch-nmbs msg)
-      (cond ((eq? msg 'zet-trein-op-spoor) zet-trein-op-spoor!)
-            ((eq? msg 'verhoog-snelheid-trein!) verhoog-snelheid-trein!)
-            ((eq? msg 'verlaag-snelheid-trein!) verlaag-snelheid-trein!)
-            ((eq? msg 'geef-snelheid-trein) geef-snelheid-trein)
-            ((eq? msg 'bereken-traject) bereken-traject)
-            ((eq? msg 'geef-wissel-ids) geef-wissel-ids)
-            ((eq? msg 'geef-aanwezige-treinen) geef-aanwezige-treinen)
-            ((eq? msg 'geef-trein-ids) geef-trein-ids)
-            ((eq? msg 'geef-detectieblok-ids) geef-detectieblok-ids)
-            ((eq? msg 'verander-wisselstand!) verander-wisselstand!)
+    (define (dispatch-nmbs msg . args)
+      (cond ((eq? msg 'zet-trein-op-spoor) (zet-trein-op-spoor! (car args) (cadr args) (caddr args)))
+            ((eq? msg 'verhoog-snelheid-trein!) (verhoog-snelheid-trein! (car args)))
+            ((eq? msg 'verlaag-snelheid-trein!) (verlaag-snelheid-trein! (car args)))
+            ((eq? msg 'geef-snelheid-trein) (geef-snelheid-trein (car args)))
+            ((eq? msg 'bereken-traject) (bereken-traject (car args) (cadr args)))
+            ((eq? msg 'geef-wissel-ids) (geef-wissel-ids))
+            ((eq? msg 'geef-aanwezige-treinen) (geef-aanwezige-treinen))
+            ((eq? msg 'geef-trein-ids) (geef-trein-ids))
+            ((eq? msg 'geef-detectieblok-ids) (geef-detectieblok-ids))
+            ((eq? msg 'verander-wisselstand!) (verander-wisselstand! (car args) (cadr args)))
             (else (display "foute boodschap - NMBS"))))
+
+    (define GUI (maak-gui dispatch-nmbs))
+    (GUI 'start)
+    (GUI 'teken-wissel-panel (geef-wissel-ids))
+    (GUI 'teken-detectieblok-panel (geef-detectieblok-ids))
+    
     dispatch-nmbs))
