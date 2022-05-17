@@ -4,8 +4,9 @@
 (require "treinreeks-adt.rkt")
 (require "wissel-adt.rkt")
 (require "spoornetwerk-adt.rkt")
+(require "GUI.rkt")
 
-(require "a-d/graph/unweighted/config.rkt")
+(require "a-d/graph/unweighted/adjacency-matrix.rkt")
 (require "a-d/graph-algorithms/undirected/bft-applications.rkt")
 
 (provide maak-nmbs)
@@ -14,7 +15,8 @@
 
 ;; Dit draait op onze computer zelf
 (define (maak-nmbs)
-  (let ((spoor (maak-spoornetwerk)))
+  (let (
+        (spoor (maak-spoornetwerk)))
 
     ;; vector met spoorcomponenten
     (define componenten (vector 'S2 'D1 'D2 'D3 'D4 'D5 'D6 'D7 'D8 'D9 'S1 'S3))
@@ -67,9 +69,20 @@
         ((aanwezige-treinen 'snelheid-trein) id-symbol)))
 
     ;; berekent een traject voor trein met 'id' naar 'destination'
-    ;; en voert deze automatisch uit.
     (define (bereken-traject id destination)
-      (let ((path (
+      (let* ((block (((spoor 'aanwezige-treinen) 'detectieblok-trein) id))
+             (from (geef-vector-index block))
+             (to (geef-vector-index destination)))
+        (shortest-path spoornetwerk from to)))
+
+    ;; geeft de index van gegeven detectieblok in componentenvector
+    (define (geef-vector-index detectieblok)
+      (let iter
+        ((idx 0))
+        (when (not (>= idx (vector-length componenten)))
+          (if (eq? detectieblok (vector-ref componenten idx))
+              idx
+              (iter (+ idx 1))))))
 
     (define (geef-aanwezige-treinen)
       (spoor 'aanwezige-treinen))

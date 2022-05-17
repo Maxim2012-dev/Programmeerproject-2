@@ -4,6 +4,7 @@
 (require "treinreeks-adt.rkt")
 (require "wissel-adt.rkt")
 (require "spoornetwerk-adt.rkt")
+(require "../GUI.rkt")
 
 (require "a-d/graph/unweighted/adjacency-matrix.rkt")
 (require "a-d/graph-algorithms/undirected/bft-applications.rkt")
@@ -14,7 +15,10 @@
 
 ;; Dit draait op onze computer zelf
 (define (maak-nmbs)
-  (let ((spoor (maak-spoornetwerk)))
+  (let ((GUI (maak-gui dispatch-nmbs))
+        (spoor (maak-spoornetwerk)))
+
+    
 
     ;; vector met spoorcomponenten
     (define componenten (vector 'S2 'D1 'D2 'D3 'D4 'D5 'D6 'D7 'D8 'D9 'S1 'S3))
@@ -109,5 +113,5 @@
             ((eq? msg 'geef-trein-ids) geef-trein-ids)
             ((eq? msg 'geef-detectieblok-ids) geef-detectieblok-ids)
             ((eq? msg 'verander-wisselstand!) verander-wisselstand!)
-            (else (display "foute boodschap - INFRABEL"))))
+            (else (display "foute boodschap - NMBS"))))
     dispatch-nmbs))
