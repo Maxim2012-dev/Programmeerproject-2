@@ -15,7 +15,8 @@
 
 ;; Dit draait op onze computer zelf
 (define (maak-nmbs)
-  (let ((spoor (maak-spoornetwerk)))
+  (let ((GUI #f)
+        (spoor (maak-spoornetwerk)))
 
 
     ;; vector met spoorcomponenten
@@ -45,9 +46,10 @@
       (let ((id-symbol (string->symbol id))
             (richting-symbol (string->symbol richting))
             (segment-symbol (string->symbol segment)))
-        (when spoor
+        (when (and spoor GUI)
           ((spoor 'voeg-nieuwe-trein-toe!)
-           (maak-trein id-symbol richting-symbol segment-symbol)))))
+           (maak-trein id-symbol richting-symbol segment-symbol))
+          (GUI 'teken-trein-in-panel id))))
 
 
     (define (verhoog-snelheid-trein! trein-id)
@@ -101,7 +103,7 @@
       ((spoor 'wijzig-stand-switch!) id stand))
 
     (define (dispatch-nmbs msg . args)
-      (cond ((eq? msg 'zet-trein-op-spoor) (zet-trein-op-spoor! (car args) (cadr args) (caddr args)))
+      (cond ((eq? msg 'zet-trein-op-spoor!) (zet-trein-op-spoor! (car args) (cadr args) (caddr args)))
             ((eq? msg 'verhoog-snelheid-trein!) (verhoog-snelheid-trein! (car args)))
             ((eq? msg 'verlaag-snelheid-trein!) (verlaag-snelheid-trein! (car args)))
             ((eq? msg 'geef-snelheid-trein) (geef-snelheid-trein (car args)))
@@ -113,9 +115,11 @@
             ((eq? msg 'verander-wisselstand!) (verander-wisselstand! (car args) (cadr args)))
             (else (display "foute boodschap - NMBS"))))
 
-    (define GUI (maak-gui dispatch-nmbs))
+    (set! GUI (maak-gui dispatch-nmbs))
     (GUI 'start)
     (GUI 'teken-wissel-panel (geef-wissel-ids))
     (GUI 'teken-detectieblok-panel (geef-detectieblok-ids))
+
+    (thread (GUI 'refresh-detection-blocks (geef-wissel-ids)))
     
     dispatch-nmbs))

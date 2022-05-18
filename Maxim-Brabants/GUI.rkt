@@ -85,31 +85,6 @@
                            [style (list 'border)]))
 
 
-    ; Nieuwe trein aan Treinoverzicht toevoegen
-    (define (add-to-trains-panel train-id)
-      (define panel (new horizontal-panel% [parent trains-panel]
-                         [alignment '(center top)]))
-      (new message% 
-           [label (string-append TRAIN_ID_LABEL "\t" train-id "\t")]
-           [parent panel])
-      (new button% [parent panel] [label INCREASE_SPEED]
-           [callback (lambda (b e)(new message%
-                                       [label (string-append SPEED_TRAIN_INCREASED train-id)]
-                                       [parent log-panel])
-                       (nmbs 'verhoog-snelheid-trein! train-id)
-                       (send speed set-label (number->string (nmbs 'geef-snelheid-trein train-id))))])
-      (define speed (new message%
-                         [label (number->string (nmbs 'geef-snelheid-trein train-id))]
-                         [parent panel]
-                         [horiz-margin 50]
-                         [auto-resize #t]))
-      (new button% [parent panel] [label DECREASE_SPEED]
-           [callback (lambda (b e)(new message%
-                                       [label (string-append SPEED_TRAIN_DECREASED train-id)]
-                                       [parent log-panel])
-                       (nmbs 'verlaag-snelheid-trein! train-id)
-                       (send speed set-label (number->string (nmbs 'geef-snelheid-trein train-id))))]))
-
 
     ; Wanneer op een radiobutton wordt geklikt (switches)
     (define (onRadioClick radiobtn event switch-id)
@@ -200,7 +175,6 @@
                             [callback (lambda (b e)(onClickConfirm (send id get-value)
                                                                    (send direction get-value)
                                                                    (send segment get-value))
-                                        (add-to-trains-panel (send id get-value))
                                         (send new-train-dialog show #f))]))
 
 
@@ -237,12 +211,37 @@
 
     ; ======================= TREINEN TOEVOEGEN =======================
 
+    ; Nieuwe trein aan Treinoverzicht toevoegen
+    (define (add-to-trains-panel train-id)
+      (define panel (new horizontal-panel% [parent trains-panel]
+                         [alignment '(center top)]))
+      (new message% 
+           [label (string-append TRAIN_ID_LABEL "\t" train-id "\t")]
+           [parent panel])
+      (new button% [parent panel] [label INCREASE_SPEED]
+           [callback (lambda (b e)(new message%
+                                       [label (string-append SPEED_TRAIN_INCREASED train-id)]
+                                       [parent log-panel])
+                       (nmbs 'verhoog-snelheid-trein! train-id)
+                       (send speed set-label (number->string (nmbs 'geef-snelheid-trein train-id))))])
+      (define speed (new message%
+                         [label (number->string (nmbs 'geef-snelheid-trein train-id))]
+                         [parent panel]
+                         [horiz-margin 50]
+                         [auto-resize #t]))
+      (new button% [parent panel] [label DECREASE_SPEED]
+           [callback (lambda (b e)(new message%
+                                       [label (string-append SPEED_TRAIN_DECREASED train-id)]
+                                       [parent log-panel])
+                       (nmbs 'verlaag-snelheid-trein! train-id)
+                       (send speed set-label (number->string (nmbs 'geef-snelheid-trein train-id))))]))
+
     (define (onClickConfirm id direction segment)
       (new message%
            [label ADDED_TRAIN_TO_TRACK]
            [parent log-panel])
       (send train-list append id (string->symbol id))
-      (nmbs 'zet-trein-op-spoor id direction segment))
+      (nmbs 'zet-trein-op-spoor! id direction segment))
 
 
     ; ======================= DIALOG - OPSTELLING KIEZEN =======================
@@ -318,6 +317,7 @@
             ((eq? msg 'teken-wissel-panel) (teken-wissel-panel (car args)))
             ((eq? msg 'teken-detectieblok-panel) (teken-detectieblok-panel (car args)))
             ((eq? msg 'refresh-detection-blocks) refresh-detection-blocks)
+            ((eq? msg 'teken-trein-in-panel) (add-to-trains-panel (car args)))
             (else (display "wrong message gui"))))
     dispatch-gui))
 
