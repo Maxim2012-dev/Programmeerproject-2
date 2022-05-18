@@ -1,9 +1,8 @@
 #lang racket
 
 (require "trein-adt.rkt")
-(require "treinreeks-adt.rkt")
-(require "wissel-adt.rkt")
 (require "spoornetwerk-adt.rkt")
+(require "../connection-API.rkt")
 (require "../GUI.rkt")
 
 (require "a-d/graph/unweighted/adjacency-matrix.rkt")
@@ -17,6 +16,10 @@
 (define (maak-nmbs)
   (let ((GUI #f)
         (spoor (maak-spoornetwerk)))
+
+
+    ;; ==================== TCP SETUP (client) ====================
+    (define-values (in out) (tcp-connect "localhost" 9883))
 
 
     ;; vector met spoorcomponenten
