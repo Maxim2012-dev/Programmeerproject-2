@@ -9,14 +9,17 @@
 
 (define SNELHEIDSVERANDERING 20)
 
+(provide maak-infrabel)
+
+;; ==================== TCP SETUP (server) ====================
+(define listener (tcp-listen 9883 4 #t))
+(define-values (in out) (tcp-accept listener))
+
+
 ;; Moet achteraf permanent kunnen draaien
 (define (maak-infrabel)
   (let ((spoor (maak-spoornetwerk)))
-
-
-    ;; ==================== TCP SETUP (server) ====================
-    (define listener (tcp-listen 9883 4 #t))
-    (define-values (in out) (tcp-accept listener))
+    
 
 
     ;; (functionaliteit voor de simulator)

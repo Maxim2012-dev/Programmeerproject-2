@@ -10,16 +10,18 @@
 
 (provide maak-nmbs)
 
+
+;; ==================== TCP SETUP (client) ====================
+(define-values (in out) (tcp-connect "localhost" 9883))
+
+
 (define SNELHEIDSVERANDERING 20)
 
 ;; Dit draait op onze computer zelf
 (define (maak-nmbs)
   (let ((GUI #f)
         (spoor (maak-spoornetwerk)))
-
-
-    ;; ==================== TCP SETUP (client) ====================
-    (define-values (in out) (tcp-connect "localhost" 9883))
+    
 
 
     ;; vector met spoorcomponenten
@@ -50,9 +52,10 @@
             (richting-symbol (string->symbol richting))
             (segment-symbol (string->symbol segment)))
         (when (and spoor GUI)
-          ((spoor 'voeg-nieuwe-trein-toe!)
-           (maak-trein id-symbol richting-symbol segment-symbol))
-          (GUI 'teken-trein-in-panel id))))
+          (let ((nieuwe-trein (maak-trein id-symbol richting-symbol segment-symbol)))
+            ((spoor 'voeg-nieuwe-trein-toe!) nieuwe-trein)
+            (GUI 'teken-trein-in-panel id)
+            (send-train-message nieuwe-trein out)))))         ;; synchroniseren met infrabel via TCP
 
 
     (define (verhoog-snelheid-trein! trein-id)

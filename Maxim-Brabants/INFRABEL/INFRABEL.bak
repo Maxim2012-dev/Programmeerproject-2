@@ -14,6 +14,11 @@
   (let ((spoor (maak-spoornetwerk)))
 
 
+    ;; ==================== TCP SETUP (server) ====================
+    (define listener (tcp-listen 9883 4 #t))
+    (define-values (in out) (tcp-accept listener))
+
+
     ;; (functionaliteit voor de simulator)
     (define (zet-trein-op-spoor! id richting segment)
       (let ((id-symbol (string->symbol id))
