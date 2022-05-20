@@ -13,16 +13,27 @@
 
 ;; ==================== TCP SETUP (client) ====================
 (define-values (in out) (tcp-connect "localhost" 9883))
+(displayln "(NMBS:: Attempting to connect to server...)")
+(if (and in out)
+    (displayln "(NMBS:: Successfully connected to server! (INFRABEL))")
+    (displayln "(NMBS:: Connection failed)"))
 
 
 (define SNELHEIDSVERANDERING 20)
 
-;; Dit draait op onze computer zelf
-(define (maak-nmbs)
-  (let ((GUI #f)
-        (spoor (maak-spoornetwerk)))
-    
 
+(define (maak-nmbs) 
+  (let ((GUI #f)
+        (spoor #f))               ;; rail network needs to be received from INFRABEL
+
+    (request-rail-network out)    ;; request the rail network from INFRABEL
+
+    (define (read-from-input-port)
+      (let ((input (read in)))
+        (displayln input)
+        (read-from-input-port)))
+    (thread read-from-input-port)
+    
 
     ;; vector met spoorcomponenten
     (define componenten (vector 'S2 'D1 'D2 'D3 'D4 'D5 'D6 'D7 'D8 'D9 'S1 'S3))
@@ -106,7 +117,8 @@
       (spoor 'detectieblok-ids))
 
     (define (verander-wisselstand! id stand)
-      ((spoor 'wijzig-stand-switch!) id stand))
+      ((spoor 'wijzig-stand-switch!) id stand)
+      (send-change-switch id stand out))                ;; synchroniseren met infrabel via TCP
 
     (define (dispatch-nmbs msg . args)
       (cond ((eq? msg 'zet-trein-op-spoor!) (zet-trein-op-spoor! (car args) (cadr args) (caddr args)))
