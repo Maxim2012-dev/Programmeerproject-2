@@ -13,7 +13,7 @@
 
 ;;; Operations intented for INFRABEL
 ;;; (API always passes a tag for INFRABEL to know what to do with the input (assumption))
-;;; ==========================================================================
+;;; =======================================================================================
 (define (request-rail-network out)
   (write (list 'rail-network) out)
   (flush-output out))
@@ -31,7 +31,7 @@
 
 
 ;;; Operations intented for NMBS
-;;; ==========================================================================
+;;; =======================================================================================
 (define (send-rail-network rails out)
   (when rails
     (write (list 'rail-network rails) out)

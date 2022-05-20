@@ -18,7 +18,6 @@
     (displayln "(NMBS:: Successfully connected to server! (INFRABEL))")
     (displayln "(NMBS:: Connection failed)"))
 
-
 (define SNELHEIDSVERANDERING 20)
 
 
