@@ -2,6 +2,7 @@
 
 (require "../simulator/interface.rkt")
 (require "../connection-API.rkt")
+(require "client-manager.rkt")
 (require "trein-adt.rkt")
 (require "treinreeks-adt.rkt")
 (require "wissel-adt.rkt")
@@ -23,18 +24,21 @@
 (define listener (tcp-listen 9883 4 #t))
 (define-values (in out) (tcp-accept listener))
 (displayln "Connection in progress...")
-(if (and in out)
+(if (and (tcp-port? in) (tcp-port? out))
     (displayln "INFRABEL successfully connected to client!")
     (displayln "Connection failed."))
 
-
+;; Spoor + Client Manager
 (define spoor (maak-spoornetwerk))
+(define client-manager (maak-client-manager))
 
 (define (read-from-input-port)
   (let ((input (read in)))
     (displayln input)
     (cond ((eq? (car input) 'rail-network)
            (send-rail-network spoor out))
+          ((eq? (car input) 'new-client)
+           (client-manager 'add-new-client (cadr input)))
           (else (display "wrong-message")))
     (read-from-input-port)))
 (thread read-from-input-port)                        ;; keeps reading the input port

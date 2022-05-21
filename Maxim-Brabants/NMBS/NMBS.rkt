@@ -14,7 +14,7 @@
 ;; ==================== TCP SETUP (client) ====================
 (define-values (in out) (tcp-connect "localhost" 9883))
 (displayln "(NMBS:: Attempting to connect to server...)")
-(if (and in out)
+(if (and (tcp-port? in) (tcp-port? out))
     (displayln "(NMBS:: Successfully connected to server! (INFRABEL))")
     (displayln "(NMBS:: Connection failed)"))
 
@@ -30,6 +30,9 @@
     (define (read-from-input-port)
       (let ((input (read in)))
         (displayln input)
+        (cond ((eq? (car input) 'rail-network)
+           (set! spoor (cadr input)))
+          (else (display "wrong-message")))
         (read-from-input-port)))
     (thread read-from-input-port)
     
@@ -66,6 +69,11 @@
             ((spoor 'voeg-nieuwe-trein-toe!) nieuwe-trein)
             (GUI 'teken-trein-in-panel id)
             (send-train-message nieuwe-trein out)))))         ;; synchroniseren met infrabel via TCP
+
+
+    ;; nieuwe client aan client manager laten toevoegen door infrabel
+    (define (voeg-nieuwe-client-toe)
+      (send-new-client (maak-nmbs) out))
 
 
     (define (verhoog-snelheid-trein! trein-id)
@@ -130,6 +138,7 @@
             ((eq? msg 'geef-trein-ids) (geef-trein-ids))
             ((eq? msg 'geef-detectieblok-ids) (geef-detectieblok-ids))
             ((eq? msg 'verander-wisselstand!) (verander-wisselstand! (car args) (cadr args)))
+            ((eq? msg 'voeg-nieuwe-client-toe) (voeg-nieuwe-client-toe))
             (else (display "foute boodschap - NMBS"))))
 
     (set! GUI (maak-gui dispatch-nmbs))

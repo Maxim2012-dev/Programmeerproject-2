@@ -3,7 +3,9 @@
 (provide request-rail-network
          send-train-message
          send-change-switch
+         send-new-client
          send-rail-network)
+
 
 ;;; API for connection between NMBS & INFRABEL
 ;;; all messsages sent will go through here
@@ -29,10 +31,16 @@
     (flush-output out)
     (display "switch-change-tcp")))
 
+(define (send-new-client nmbs-client out)
+  (when nmbs-client
+    (write (list 'new-client nmbs-client) out)
+    (flush-output out)))
+
 
 ;;; Operations intented for NMBS
 ;;; =======================================================================================
 (define (send-rail-network rails out)
   (when rails
     (write (list 'rail-network rails) out)
-    (flush-output out)))
+    (flush-output out)
+    (display "sent")))
