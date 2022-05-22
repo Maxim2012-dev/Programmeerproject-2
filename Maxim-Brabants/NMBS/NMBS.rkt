@@ -23,16 +23,23 @@
 
 (define (maak-nmbs) 
   (let ((GUI #f)
-        (spoor #f))               ;; rail network needs to be received from INFRABEL
+        (spoor #f))
 
-    (request-rail-network out)    ;; request the rail network from INFRABEL
+    (request-rail-network out)
 
+    (define (setup-gui)
+      (GUI 'start)
+      (GUI 'teken-wissel-panel)
+      (GUI 'teken-detectieblok-panel)
+      (thread (GUI 'refresh-detection-blocks)))
+    
     (define (read-from-input-port)
       (let ((input (read in)))
         (displayln input)
         (cond ((eq? (car input) 'rail-network)
-           (set! spoor (cadr input)))
-          (else (display "wrong-message")))
+               (set! spoor (maak-spoornetwerk))
+               (setup-gui))
+              (else (display "wrong-message")))
         (read-from-input-port)))
     (thread read-from-input-port)
     
@@ -142,10 +149,5 @@
             (else (display "foute boodschap - NMBS"))))
 
     (set! GUI (maak-gui dispatch-nmbs))
-    (GUI 'start)
-    (GUI 'teken-wissel-panel)
-    (GUI 'teken-detectieblok-panel)
-
-    (thread (GUI 'refresh-detection-blocks))
     
     dispatch-nmbs))

@@ -2,7 +2,6 @@
 
 (require "NMBS/NMBS.rkt")
 
-
 (define nmbs (maak-nmbs))
 
 (nmbs 'zet-trein-op-spoor! "T-1" "D5" "D6")

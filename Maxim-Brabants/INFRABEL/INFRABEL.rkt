@@ -15,10 +15,9 @@
 ;; ========================  INFRABEL  ==========================
 ;; ==============================================================
 
- 
+
 (setup-loop-and-switches)
 (start)
-
 
 ;; ==================== TCP SETUP (server) ======================
 (define listener (tcp-listen 9883 4 #t))
@@ -36,7 +35,7 @@
   (let ((input (read in)))
     (displayln input)
     (cond ((eq? (car input) 'rail-network)
-           (send-rail-network spoor out))
+           (send-rail-network out))
           ((eq? (car input) 'new-client)
            (client-manager 'add-new-client (cadr input)))
           (else (display "wrong-message")))

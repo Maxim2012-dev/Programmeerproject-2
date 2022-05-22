@@ -39,8 +39,7 @@
 
 ;;; Operations intented for NMBS
 ;;; =======================================================================================
-(define (send-rail-network rails out)
-  (when rails
-    (write (list 'rail-network rails) out)
-    (flush-output out)
-    (display "sent")))
+(define (send-rail-network out)
+  (write (list 'rail-network) out)
+  (flush-output out)
+  (display "sent"))
