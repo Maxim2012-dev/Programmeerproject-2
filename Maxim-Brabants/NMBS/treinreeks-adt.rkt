@@ -40,10 +40,6 @@
       (iter reeks)
       (set-loco-speed! id snelheid))
 
-    ; detectieblok van trein met id
-    (define (detectieblok-trein trein-id)
-      (get-loco-detection-block trein-id))
-
     
     ; dispatch-procedure
     (define (dispatch-treinreeks msg)
@@ -51,7 +47,6 @@
             ((eq? msg 'voeg-trein-toe!) voeg-trein-toe!)
             ((eq? msg 'verwijder-trein!) verwijder-trein!)
             ((eq? msg 'wijzig-snelheid-trein!) wijzig-snelheid-trein!)
-            ((eq? msg 'detectieblok-trein) detectieblok-trein)
             (else (display "foute boodschap - treinreeks-adt"))))
     dispatch-treinreeks))
       

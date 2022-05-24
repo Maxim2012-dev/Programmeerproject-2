@@ -3,13 +3,15 @@
 (provide request-switch-ids
          request-detection-block-ids
          request-train-speed
+         request-loco-detection-block
          send-train-message
          send-change-switch
          send-new-client
          send-switch-ids
          send-detection-block-ids
          send-draw-train
-         send-draw-train-speed)
+         send-draw-train-speed
+         send-draw-loco-block)
 
 
 ;;; API for connection between NMBS & INFRABEL
@@ -33,6 +35,11 @@
 (define (request-train-speed id out)
   (when (symbol? id)
     (write (list 'train-speed) out)
+    (flush-output out)))
+
+(define (request-loco-detection-block id out)
+  (when (symbol? id)
+    (write (list 'loco-block) out)
     (flush-output out)))
 
 (define (send-train-message id direction segment out)
@@ -77,6 +84,11 @@
 (define (send-draw-train-speed id speed out)
   (when (symbol? id)
     (write (list 'draw-train-speed id (number->string speed)) out)
+    (flush-output out)))
+
+(define (send-draw-loco-block id block out)
+  (when (and (symbol? id) (symbol? block))
+    (write (list 'draw-loco-block id block) out)
     (flush-output out)))
 
 

@@ -46,6 +46,10 @@
            (zet-trein-op-spoor! (cadr input) (caddr input) (cadddr input)))
           ((eq? (car input) 'train-speed)                                            ;; returns speed of a train
            (send-draw-train-speed (geef-snelheid-trein (cadr input)) (cadr input)))
+          ((eq? (car input) 'loco-block)                                             ;; returns detection block of a train
+           (let ((loco-block (((spoor 'aanwezige-treinen) 'detectieblok-trein) (cadr input))))
+             (when loco-block
+               (send-draw-loco-block (cadr input) loco-block)))) 
           (else (display "wrong-message")))
     (read-from-input-port)))
 (thread read-from-input-port)                        ;; keeps reading the input port

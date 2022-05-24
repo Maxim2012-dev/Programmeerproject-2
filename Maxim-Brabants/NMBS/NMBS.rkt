@@ -41,6 +41,8 @@
                    (display (cadr input))))
               ((eq? (car input) 'draw-train-speed)                                           ;; snelheid van trein tekenen
                (GUI 'teken-trein-snelheid (cadr input) (string->number (caddr input))))
+              ((eq? (car input) 'draw-loco-block)                                           ;; snelheid van trein tekenen
+               (GUI 'teken-detectieblok-status (cadr input) (caddr input)))
               (else (display "wrong-message")))
         (read-from-input-port)))
     (thread read-from-input-port)
@@ -128,6 +130,9 @@
     (define (geef-detectieblok-ids)
       (spoor 'detectieblok-ids))
 
+    (define (detectieblok-trein trein-id)
+      (request-loco-detection-block trein-id out))
+
     (define (verander-wisselstand! id stand)
       (send-change-switch id stand out))                ;; ask INFRABEL to change switch status
 
@@ -142,6 +147,7 @@
             ((eq? msg 'geef-trein-ids) (geef-trein-ids))
             ((eq? msg 'geef-detectieblok-ids) (geef-detectieblok-ids))
             ((eq? msg 'verander-wisselstand!) (verander-wisselstand! (car args) (cadr args)))
+            ((eq? msg 'detectieblok-trein) (detectieblok-trein (car args)))
             ((eq? msg 'voeg-nieuwe-client-toe) (voeg-nieuwe-client-toe))
             (else (display "foute boodschap - NMBS"))))
 
