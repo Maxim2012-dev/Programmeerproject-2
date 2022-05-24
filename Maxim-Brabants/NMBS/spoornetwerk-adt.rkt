@@ -6,10 +6,10 @@
 (provide maak-spoornetwerk)
 
 (define (maak-spoornetwerk)
-  (let ((wissel-ids (get-switch-ids))
+  (let ((wissel-ids '())
         (wissels '()) ; effectieve wissels om stand te manipuleren
         (aanwezige-treinen (maak-treinreeks))
-        (detectieblok-ids (get-detection-block-ids)))
+        (detectieblok-ids '()))
 
 
     ; een wissel van het type 'wissel' toevoegen aan de lijst
@@ -21,19 +21,23 @@
     (define (voeg-nieuwe-trein-toe! trein)
       ((aanwezige-treinen 'voeg-trein-toe!) trein))
 
-    ; positie van switch met id wijzigen
-    (define (wijzig-stand-switch! id stand)
-      (set-switch-position! id stand))
+
+    (define (set-wissel-ids! ids)
+      (set! wissel-ids ids))
+
+    (define (set-detectieblok-ids! ids)
+      (set! detectieblok-ids ids))
 
     ; dispatch-procedure
-    (define (dispatch-spoornetwerk msg)
+    (define (dispatch-spoornetwerk msg . args)
       (cond ((eq? msg 'wissel-ids) wissel-ids)
             ((eq? msg 'wissels) wissels)
             ((eq? msg 'aanwezige-treinen) aanwezige-treinen)
             ((eq? msg 'detectieblok-ids) detectieblok-ids)
             ((eq? msg 'voeg-wissel-toe!) voeg-wissel-toe!)
             ((eq? msg 'voeg-nieuwe-trein-toe!) voeg-nieuwe-trein-toe!)
-            ((eq? msg 'wijzig-stand-switch!) wijzig-stand-switch!)
-            (else (display "foute boodschap - spoornetwerk-adt"))))
+            ((eq? msg 'set-wissel-ids!) (set-wissel-ids! (car args)))
+            ((eq? msg 'set-detectieblok-ids!) (set-detectieblok-ids! (car args)))
+            (else (display "foute boodschap - spoornetwerk-adt - nmbs"))))
     dispatch-spoornetwerk))
                                                          

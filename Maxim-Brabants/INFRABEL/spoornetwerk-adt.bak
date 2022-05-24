@@ -39,6 +39,6 @@
             ((eq? msg 'voeg-wissel-toe!) voeg-wissel-toe!)
             ((eq? msg 'voeg-nieuwe-trein-toe!) voeg-nieuwe-trein-toe!)
             ((eq? msg 'wijzig-stand-switch!) wijzig-stand-switch!)
-            (else (display "foute boodschap - spoornetwerk-adt - infrabel"))))
+            (else (display "foute boodschap - spoornetwerk-adt"))))
     dispatch-spoornetwerk))
                                                          

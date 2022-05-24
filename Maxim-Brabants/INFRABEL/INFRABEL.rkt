@@ -31,13 +31,21 @@
 (define spoor (maak-spoornetwerk))
 (define client-manager (maak-client-manager))
 
+;; proces dat van de input port blijft lezen
 (define (read-from-input-port)
   (let ((input (read in)))
-    (displayln input)
-    (cond ((eq? (car input) 'rail-network)
-           (send-rail-network out))
-          ((eq? (car input) 'new-client)
+    (cond ((eq? (car input) 'new-client)                                             ;; new nmbs client
            (client-manager 'add-new-client (cadr input)))
+          ((eq? (car input) 'switch-status)                                          ;; change the status of a switch
+           (verander-wisselstand! (cadr input) (caddr input)))
+          ((eq? (car input) 'switch-ids)                                             ;; return ids of switches from railway
+           (send-switch-ids (spoor 'wissel-ids) out))
+          ((eq? (car input) 'detection-block-ids)                                    ;; return ids of detection blocks from railway
+           (send-detection-block-ids (spoor 'detectieblok-ids) out))
+          ((eq? (car input) 'new-train)                                              ;; put new train on the tracks (simulator)
+           (zet-trein-op-spoor! (cadr input) (caddr input) (cadddr input)))
+          ((eq? (car input) 'train-speed)                                            ;; returns speed of a train
+           (send-draw-train-speed (geef-snelheid-trein (cadr input)) (cadr input)))
           (else (display "wrong-message")))
     (read-from-input-port)))
 (thread read-from-input-port)                        ;; keeps reading the input port
@@ -45,12 +53,10 @@
 
 ;; (functionaliteit voor de simulator)
 (define (zet-trein-op-spoor! id richting segment)
-  (let ((id-symbol (string->symbol id))
-        (richting-symbol (string->symbol richting))
-        (segment-symbol (string->symbol segment)))
-    (when spoor
-      ((spoor 'voeg-nieuwe-trein-toe!)
-       (maak-trein id-symbol richting-symbol segment-symbol)))))
+  (when spoor
+    ((spoor 'voeg-nieuwe-trein-toe!)
+     (maak-trein id richting segment))
+    (send-draw-train id out)))
 
 
 (define (verhoog-snelheid-trein! trein-id)
@@ -78,7 +84,8 @@
   (spoor 'detectieblok-ids))
 
 (define (verander-wisselstand! id stand)
-  ((spoor 'wijzig-stand-switch!) id stand))
+  (let ((number-stand (string->number stand)))
+    ((spoor 'wijzig-stand-switch!) id number-stand)))
 
 
 

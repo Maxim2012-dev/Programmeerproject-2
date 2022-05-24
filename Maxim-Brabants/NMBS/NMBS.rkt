@@ -23,22 +23,24 @@
 
 (define (maak-nmbs) 
   (let ((GUI #f)
-        (spoor #f))
+        (spoor (maak-spoornetwerk)))
 
-    (request-rail-network out)
-
-    (define (setup-gui)
-      (GUI 'start)
-      (GUI 'teken-wissel-panel)
-      (GUI 'teken-detectieblok-panel)
-      (thread (GUI 'refresh-detection-blocks)))
+    ;; request railway components from INFRABEL
+    (request-switch-ids out)
+    (request-detection-block-ids out)
     
     (define (read-from-input-port)
       (let ((input (read in)))
-        (displayln input)
-        (cond ((eq? (car input) 'rail-network)
-               (set! spoor (maak-spoornetwerk))
-               (setup-gui))
+        (cond ((eq? (car input) 'switch-ids)                                                 ;; wissel-ids ontvangen
+               (spoor 'set-wissel-ids! (cdr input)))
+              ((eq? (car input) 'detection-block-ids)                                        ;; detectieblok-ids ontvangen
+               (spoor 'set-detectieblok-ids! (cdr input)))
+              ((eq? (car input) 'draw-train)                                                 ;; nieuwe trein tekenen in panel
+               (if (symbol? (cadr input))
+                   (GUI 'teken-trein-in-panel (symbol->string (cadr input)))
+                   (display (cadr input))))
+              ((eq? (car input) 'draw-train-speed)                                           ;; snelheid van trein tekenen
+               (GUI 'teken-trein-snelheid (cadr input) (string->number (caddr input))))
               (else (display "wrong-message")))
         (read-from-input-port)))
     (thread read-from-input-port)
@@ -66,16 +68,13 @@
         (add-edge! g 11 7)
         g))
 
-    ;; (functionaliteit voor de simulator)
     (define (zet-trein-op-spoor! id richting segment)
       (let ((id-symbol (string->symbol id))
             (richting-symbol (string->symbol richting))
             (segment-symbol (string->symbol segment)))
         (when (and spoor GUI)
-          (let ((nieuwe-trein (maak-trein id-symbol richting-symbol segment-symbol)))
-            ((spoor 'voeg-nieuwe-trein-toe!) nieuwe-trein)
-            (GUI 'teken-trein-in-panel id)
-            (send-train-message nieuwe-trein out)))))         ;; synchroniseren met infrabel via TCP
+            ((spoor 'voeg-nieuwe-trein-toe!) (maak-trein id-symbol richting-symbol segment-symbol))
+            (send-train-message id-symbol richting-symbol segment-symbol out))))           ;; gegevens voor nieuwe trein doorsturen naar infrabel
 
 
     ;; nieuwe client aan client manager laten toevoegen door infrabel
@@ -97,9 +96,8 @@
 
 
     (define (geef-snelheid-trein trein-id)
-      (let ((id-symbol (string->symbol trein-id))
-            (aanwezige-treinen (spoor 'aanwezige-treinen)))
-        ((aanwezige-treinen 'snelheid-trein) id-symbol)))
+      (let ((id-symbol (string->symbol trein-id)))
+        (request-train-speed id-symbol)))
 
     ;; berekent een traject voor trein met 'id' naar 'destination'
     (define (bereken-traject id destination)
@@ -131,8 +129,7 @@
       (spoor 'detectieblok-ids))
 
     (define (verander-wisselstand! id stand)
-      ((spoor 'wijzig-stand-switch!) id stand)
-      (send-change-switch id stand out))                ;; synchroniseren met infrabel via TCP
+      (send-change-switch id stand out))                ;; ask INFRABEL to change switch status
 
     (define (dispatch-nmbs msg . args)
       (cond ((eq? msg 'zet-trein-op-spoor!) (zet-trein-op-spoor! (car args) (cadr args) (caddr args)))
@@ -149,5 +146,11 @@
             (else (display "foute boodschap - NMBS"))))
 
     (set! GUI (maak-gui dispatch-nmbs))
+
+    (GUI 'start)
+    (GUI 'teken-wissel-panel)
+    (GUI 'teken-detectieblok-panel)
+    
+    (thread (GUI 'refresh-detection-blocks))
     
     dispatch-nmbs))
