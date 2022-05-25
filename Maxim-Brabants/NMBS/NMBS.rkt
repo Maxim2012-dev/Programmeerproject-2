@@ -34,11 +34,13 @@
     
     (define (read-from-input-port)
       (let ((input (read in)))
-        (cond ((eq? (car input) 'switch-ids)                                                 ;; wissel-ids ontvangen
+        (cond ((eq? (car input) 'switch-ids)                                                 ;; wissel-ids ontvangen + wissel panel tekenen
                (spoor 'set-wissel-ids! (cdr input))
+               (GUI 'teken-wissel-panel)
                (displayln (spoor 'wissel-ids)))
-              ((eq? (car input) 'detection-block-ids)                                        ;; detectieblok-ids ontvangen
+              ((eq? (car input) 'detection-block-ids)                                        ;; detectieblok-ids ontvangen + detectieblok panel tekenen
                (spoor 'set-detectieblok-ids! (cdr input))
+               (GUI 'teken-detectieblok-panel)
                (displayln (spoor 'detectieblok-ids)))
               ((eq? (car input) 'draw-train)                                                 ;; nieuwe trein tekenen in panel
                (when (symbol? (cadr input))
@@ -154,11 +156,7 @@
             (else (display "foute boodschap - NMBS"))))
 
     (set! GUI (maak-gui dispatch-nmbs))
-
     (GUI 'start)
-    (GUI 'teken-wissel-panel)
-    (GUI 'teken-detectieblok-panel)
-    
     (thread (GUI 'refresh-detection-blocks))
     
     dispatch-nmbs))

@@ -11,8 +11,7 @@
   (let ((active-clients '()))
 
     (define (add-new-client nmbs-client)
-      (set! active-clients (cons nmbs-client active-clients))
-      (displayln "added client"))
+      (set! active-clients (cons nmbs-client active-clients)))
 
 
     (define (dispatch-manager msg . args)
