@@ -1,6 +1,5 @@
 #lang racket
 
-(require "../simulator/interface.rkt")
 (require "treinreeks-adt.rkt")
 
 (provide maak-spoornetwerk)

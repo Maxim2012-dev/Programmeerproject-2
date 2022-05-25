@@ -2,7 +2,6 @@
 
 (require "../simulator/interface.rkt")
 (require "../connection-API.rkt")
-(require "client-manager.rkt")
 (require "trein-adt.rkt")
 (require "treinreeks-adt.rkt")
 (require "wissel-adt.rkt")
@@ -29,14 +28,11 @@
 
 ;; Spoor + Client Manager
 (define spoor (maak-spoornetwerk))
-(define client-manager (maak-client-manager))
 
 ;; proces dat van de input port blijft lezen
 (define (read-from-input-port)
   (let ((input (read in)))
-    (cond ((eq? (car input) 'new-client)                                                        ;; new nmbs client
-           (client-manager 'add-new-client (cadr input)))
-          ((eq? (car input) 'switch-status)                                                     ;; change the status of a switch
+    (cond ((eq? (car input) 'switch-status)                                                     ;; change the status of a switch
            (verander-wisselstand! (cadr input) (caddr input)))
           ((eq? (car input) 'switch-ids)                                                        ;; return ids of switches from railway
            (send-switch-ids (spoor 'wissel-ids) out))

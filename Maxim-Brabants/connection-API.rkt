@@ -7,7 +7,6 @@
          send-train-message
          send-change-switch
          send-change-train-speed
-         send-new-client
          send-switch-ids
          send-detection-block-ids
          send-draw-train
@@ -53,18 +52,13 @@
 (define (send-change-switch id status out)
   (when (or (= status 1) (= status 2))
     (write (list 'switch-status id (number->string status)) out)
-    (flush-output out)
-    (display "switch-change-tcp")))
+    (flush-output out)))
 
 (define (send-change-train-speed id action out)
   (when (and (symbol? id) (symbol? action))
     (write (list 'change-speed id action) out)
     (flush-output out)))
 
-(define (send-new-client nmbs-client out)
-  (when nmbs-client
-    (write (list 'new-client nmbs-client) out)
-    (flush-output out)))
 
 
 ;;; Operations intented for NMBS

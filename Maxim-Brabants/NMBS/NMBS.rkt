@@ -2,6 +2,7 @@
 
 (require "trein-adt.rkt")
 (require "spoornetwerk-adt.rkt")
+(require "client-manager.rkt")
 (require "../connection-API.rkt")
 (require "../GUI.rkt")
 
@@ -20,8 +21,10 @@
 
 (define SNELHEIDSVERANDERING 20)
 
+;; houdt alle nmbs-clients gesynchroniseerd
+(define client-manager (maak-client-manager))
 
-(define (maak-nmbs) 
+(define (maak-nmbs)
   (let ((GUI #f)
         (spoor (maak-spoornetwerk)))
 
@@ -32,9 +35,11 @@
     (define (read-from-input-port)
       (let ((input (read in)))
         (cond ((eq? (car input) 'switch-ids)                                                 ;; wissel-ids ontvangen
-               (spoor 'set-wissel-ids! (cdr input)))
+               (spoor 'set-wissel-ids! (cdr input))
+               (displayln (spoor 'wissel-ids)))
               ((eq? (car input) 'detection-block-ids)                                        ;; detectieblok-ids ontvangen
-               (spoor 'set-detectieblok-ids! (cdr input)))
+               (spoor 'set-detectieblok-ids! (cdr input))
+               (displayln (spoor 'detectieblok-ids)))
               ((eq? (car input) 'draw-train)                                                 ;; nieuwe trein tekenen in panel
                (when (symbol? (cadr input))
                    (GUI 'teken-trein-in-panel (symbol->string (cadr input)))))
@@ -78,18 +83,20 @@
             (send-train-message id-symbol richting-symbol segment-symbol out))))           ;; gegevens voor nieuwe trein doorsturen naar infrabel
 
 
-    ;; nieuwe client aan client manager laten toevoegen door infrabel
+    ;; nieuwe client aan client manager toevoegen
     (define (voeg-nieuwe-client-toe)
-      (send-new-client (maak-nmbs) out))
+      (client-manager 'add-new-client (maak-nmbs)))
 
 
     (define (verhoog-snelheid-trein! trein-id)
       (let* ((id-symbol (string->symbol trein-id)))
-        (send-change-train-speed id-symbol '+ out)))
+        (send-change-train-speed id-symbol '+ out)
+        ((spoor 'aanwezige-treinen) 'wijzig-snelheid-trein! trein-id '+)))
 
     (define (verlaag-snelheid-trein! trein-id)
       (let* ((id-symbol (string->symbol trein-id)))
-        (send-change-train-speed id-symbol '- out)))
+        (send-change-train-speed id-symbol '- out)
+        ((spoor 'aanwezige-treinen) 'wijzig-snelheid-trein! trein-id '-)))
 
 
     (define (geef-snelheid-trein trein-id)

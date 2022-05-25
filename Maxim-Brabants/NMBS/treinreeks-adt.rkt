@@ -26,27 +26,25 @@
               (cond ((eq? trein (cadr reeks))
                      (set-cdr! reeks (cddr reeks)))
                     (else (iter (cdr reeks))))))
-        (iter reeks)
-        (remove-loco trein-id)))
+        (iter reeks)))
 
 
     ; snelheid van trein met id wijzigen
-    (define (wijzig-snelheid-trein! id snelheid)
+    (define (wijzig-snelheid-trein! id action)
       (define (iter reeks)
           (when (not (null? (cdr reeks)))
               (cond ((eq? id ((cadr reeks) 'trein-id))
-                     (((cadr reeks) 'verander-snelheid!) snelheid)) 
+                     ((cadr reeks) 'verander-snelheid! action))
                     (else (iter (cdr reeks))))))
-      (iter reeks)
-      (set-loco-speed! id snelheid))
+      (iter reeks))
 
     
     ; dispatch-procedure
-    (define (dispatch-treinreeks msg)
+    (define (dispatch-treinreeks msg . args)
       (cond ((eq? msg 'reeks) reeks)
             ((eq? msg 'voeg-trein-toe!) voeg-trein-toe!)
             ((eq? msg 'verwijder-trein!) verwijder-trein!)
-            ((eq? msg 'wijzig-snelheid-trein!) wijzig-snelheid-trein!)
+            ((eq? msg 'wijzig-snelheid-trein!) (wijzig-snelheid-trein! (car args) (cadr args)))
             (else (display "foute boodschap - treinreeks-adt"))))
     dispatch-treinreeks))
       
