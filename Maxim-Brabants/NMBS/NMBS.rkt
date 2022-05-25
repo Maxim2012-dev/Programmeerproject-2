@@ -39,8 +39,7 @@
                (when (symbol? (cadr input))
                    (GUI 'teken-trein-in-panel (symbol->string (cadr input)))))
               ((eq? (car input) 'draw-train-speed)                                           ;; snelheid van trein tekenen
-               (displayln "draw-speed")
-               (GUI 'teken-trein-snelheid (cadr input) (string->number (caddr input))))
+               (GUI 'teken-trein-snelheid (cadr input) (caddr input)))
               ((eq? (car input) 'draw-loco-block)                                            ;; status van detectieblok tekenen
                (GUI 'teken-detectieblok-status (cadr input) (caddr input)))
               (else (display "wrong-message")))

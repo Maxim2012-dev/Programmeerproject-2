@@ -89,7 +89,6 @@
 
 (define (send-draw-train-speed id speed out)
   (when (symbol? id)
-    (displayln "symbol")
     (write (list 'draw-train-speed id (number->string speed)) out)
     (flush-output out)))
 

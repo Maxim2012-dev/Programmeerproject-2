@@ -52,7 +52,7 @@
                (send-draw-loco-block (cadr input) loco-block out))))
           ((eq? (car input) 'change-speed)                                                      ;; changes speed of a train
            (dispatch-change-speed (cadr input) (caddr input))
-           (send-draw-train-speed (geef-snelheid-trein (cadr input)) (cadr input) out))
+           (send-draw-train-speed (cadr input) (geef-snelheid-trein (cadr input)) out))
           (else (display "wrong-message")))
     (read-from-input-port)))
 (thread read-from-input-port)                        ;; keeps reading the input port
