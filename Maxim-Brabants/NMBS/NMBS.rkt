@@ -36,12 +36,12 @@
               ((eq? (car input) 'detection-block-ids)                                        ;; detectieblok-ids ontvangen
                (spoor 'set-detectieblok-ids! (cdr input)))
               ((eq? (car input) 'draw-train)                                                 ;; nieuwe trein tekenen in panel
-               (if (symbol? (cadr input))
-                   (GUI 'teken-trein-in-panel (symbol->string (cadr input)))
-                   (display (cadr input))))
+               (when (symbol? (cadr input))
+                   (GUI 'teken-trein-in-panel (symbol->string (cadr input)))))
               ((eq? (car input) 'draw-train-speed)                                           ;; snelheid van trein tekenen
+               (displayln "draw-speed")
                (GUI 'teken-trein-snelheid (cadr input) (string->number (caddr input))))
-              ((eq? (car input) 'draw-loco-block)                                           ;; snelheid van trein tekenen
+              ((eq? (car input) 'draw-loco-block)                                            ;; status van detectieblok tekenen
                (GUI 'teken-detectieblok-status (cadr input) (caddr input)))
               (else (display "wrong-message")))
         (read-from-input-port)))
@@ -85,21 +85,17 @@
 
 
     (define (verhoog-snelheid-trein! trein-id)
-      (let* ((id-symbol (string->symbol trein-id))
-             (aanwezige-treinen (spoor 'aanwezige-treinen))
-             (treinsnelheid ((aanwezige-treinen 'snelheid-trein) id-symbol)))
-        ((aanwezige-treinen 'wijzig-snelheid-trein!) id-symbol (+ treinsnelheid SNELHEIDSVERANDERING))))
+      (let* ((id-symbol (string->symbol trein-id)))
+        (send-change-train-speed id-symbol '+ out)))
 
     (define (verlaag-snelheid-trein! trein-id)
-      (let* ((id-symbol (string->symbol trein-id))
-             (aanwezige-treinen (spoor 'aanwezige-treinen))
-             (treinsnelheid ((aanwezige-treinen 'snelheid-trein) id-symbol)))
-        ((aanwezige-treinen 'wijzig-snelheid-trein!) id-symbol (- treinsnelheid SNELHEIDSVERANDERING))))
+      (let* ((id-symbol (string->symbol trein-id)))
+        (send-change-train-speed id-symbol '- out)))
 
 
     (define (geef-snelheid-trein trein-id)
       (let ((id-symbol (string->symbol trein-id)))
-        (request-train-speed id-symbol)))
+        (request-train-speed id-symbol out)))
 
     ;; berekent een traject voor trein met 'id' naar 'destination'
     (define (bereken-traject id destination)

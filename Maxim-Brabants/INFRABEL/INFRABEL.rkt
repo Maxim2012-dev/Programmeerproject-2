@@ -34,22 +34,25 @@
 ;; proces dat van de input port blijft lezen
 (define (read-from-input-port)
   (let ((input (read in)))
-    (cond ((eq? (car input) 'new-client)                                             ;; new nmbs client
+    (cond ((eq? (car input) 'new-client)                                                        ;; new nmbs client
            (client-manager 'add-new-client (cadr input)))
-          ((eq? (car input) 'switch-status)                                          ;; change the status of a switch
+          ((eq? (car input) 'switch-status)                                                     ;; change the status of a switch
            (verander-wisselstand! (cadr input) (caddr input)))
-          ((eq? (car input) 'switch-ids)                                             ;; return ids of switches from railway
+          ((eq? (car input) 'switch-ids)                                                        ;; return ids of switches from railway
            (send-switch-ids (spoor 'wissel-ids) out))
-          ((eq? (car input) 'detection-block-ids)                                    ;; return ids of detection blocks from railway
+          ((eq? (car input) 'detection-block-ids)                                               ;; return ids of detection blocks from railway
            (send-detection-block-ids (spoor 'detectieblok-ids) out))
-          ((eq? (car input) 'new-train)                                              ;; put new train on the tracks (simulator)
+          ((eq? (car input) 'new-train)                                                         ;; put new train on the tracks (simulator)
            (zet-trein-op-spoor! (cadr input) (caddr input) (cadddr input)))
-          ((eq? (car input) 'train-speed)                                            ;; returns speed of a train
-           (send-draw-train-speed (geef-snelheid-trein (cadr input)) (cadr input)))
-          ((eq? (car input) 'loco-block)                                             ;; returns detection block of a train
+          ((eq? (car input) 'train-speed)                                                       ;; returns speed of a train
+           (send-draw-train-speed (geef-snelheid-trein (cadr input)) (cadr input) out))
+          ((eq? (car input) 'loco-block)                                                        ;; returns detection block of a train
            (let ((loco-block (((spoor 'aanwezige-treinen) 'detectieblok-trein) (cadr input))))
              (when loco-block
-               (send-draw-loco-block (cadr input) loco-block)))) 
+               (send-draw-loco-block (cadr input) loco-block out))))
+          ((eq? (car input) 'change-speed)                                                      ;; changes speed of a train
+           (dispatch-change-speed (cadr input) (caddr input))
+           (send-draw-train-speed (geef-snelheid-trein (cadr input)) (cadr input) out))
           (else (display "wrong-message")))
     (read-from-input-port)))
 (thread read-from-input-port)                        ;; keeps reading the input port
@@ -62,24 +65,25 @@
      (maak-trein id richting segment))
     (send-draw-train id out)))
 
+(define (dispatch-change-speed id action)
+  (cond ((eq? action '+) (verhoog-snelheid-trein! id))
+        ((eq? action '-) (verlaag-snelheid-trein! id))
+        (else (displayln "wrong-action-dispatch"))))
 
 (define (verhoog-snelheid-trein! trein-id)
-  (let* ((id-symbol (string->symbol trein-id))
-         (aanwezige-treinen (spoor 'aanwezige-treinen))
-         (treinsnelheid ((aanwezige-treinen 'snelheid-trein) id-symbol)))
-    ((aanwezige-treinen 'wijzig-snelheid-trein!) id-symbol (+ treinsnelheid SNELHEIDSVERANDERING))))
+  (let* ((aanwezige-treinen (spoor 'aanwezige-treinen))
+         (treinsnelheid ((aanwezige-treinen 'snelheid-trein) trein-id)))
+    ((aanwezige-treinen 'wijzig-snelheid-trein!) trein-id (+ treinsnelheid SNELHEIDSVERANDERING))))
 
 (define (verlaag-snelheid-trein! trein-id)
-  (let* ((id-symbol (string->symbol trein-id))
-         (aanwezige-treinen (spoor 'aanwezige-treinen))
-         (treinsnelheid ((aanwezige-treinen 'snelheid-trein) id-symbol)))
-    ((aanwezige-treinen 'wijzig-snelheid-trein!) id-symbol (- treinsnelheid SNELHEIDSVERANDERING))))
+  (let* ((aanwezige-treinen (spoor 'aanwezige-treinen))
+         (treinsnelheid ((aanwezige-treinen 'snelheid-trein) trein-id)))
+    ((aanwezige-treinen 'wijzig-snelheid-trein!) trein-id (- treinsnelheid SNELHEIDSVERANDERING))))
 
 
 (define (geef-snelheid-trein trein-id)
-  (let ((id-symbol (string->symbol trein-id))
-        (aanwezige-treinen (spoor 'aanwezige-treinen)))
-    ((aanwezige-treinen 'snelheid-trein) id-symbol)))
+  (let ((aanwezige-treinen (spoor 'aanwezige-treinen)))
+    ((aanwezige-treinen 'snelheid-trein) trein-id)))
 
 (define (geef-wissel-ids)
   (spoor 'wissel-ids))

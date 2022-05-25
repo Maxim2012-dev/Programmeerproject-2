@@ -6,6 +6,7 @@
          request-loco-detection-block
          send-train-message
          send-change-switch
+         send-change-train-speed
          send-new-client
          send-switch-ids
          send-detection-block-ids
@@ -39,7 +40,7 @@
 
 (define (request-loco-detection-block id out)
   (when (symbol? id)
-    (write (list 'loco-block) out)
+    (write (list 'loco-block id) out)
     (flush-output out)))
 
 (define (send-train-message id direction segment out)
@@ -54,6 +55,11 @@
     (write (list 'switch-status id (number->string status)) out)
     (flush-output out)
     (display "switch-change-tcp")))
+
+(define (send-change-train-speed id action out)
+  (when (and (symbol? id) (symbol? action))
+    (write (list 'change-speed id action) out)
+    (flush-output out)))
 
 (define (send-new-client nmbs-client out)
   (when nmbs-client
@@ -83,6 +89,7 @@
 
 (define (send-draw-train-speed id speed out)
   (when (symbol? id)
+    (displayln "symbol")
     (write (list 'draw-train-speed id (number->string speed)) out)
     (flush-output out)))
 
