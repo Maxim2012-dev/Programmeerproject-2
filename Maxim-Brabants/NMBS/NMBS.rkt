@@ -22,11 +22,14 @@
 
 ;; gedeeld spoornetwerk over alle clients
 (define spoor (maak-spoornetwerk))
+(define id 1)                 ;; identificeren van clients in client-manager
 
 (define (maak-nmbs manager)
-  (let ((GUI #f)
-        (client-manager manager))
+  (let ((client-id id)
+        (GUI #f))
 
+    (set! id (+ id 1))
+    
     ;; request railway components from INFRABEL
     (request-switch-ids out)
     (request-detection-block-ids out)
@@ -78,12 +81,16 @@
             (segment-symbol (string->symbol segment)))
         (when (and spoor GUI)
             ((spoor 'voeg-nieuwe-trein-toe!) (maak-trein id-symbol richting-symbol segment-symbol))
-            (send-train-message id-symbol richting-symbol segment-symbol out))))           ;; gegevens voor nieuwe trein doorsturen naar infrabel
+            (send-train-message id-symbol richting-symbol segment-symbol out)                  ;; gegevens voor nieuwe trein doorsturen naar infrabel
+            (manager 'synchronize-new-train client-id id-symbol))))                            ;; nieuwe trein synchroniseren over alle GUI's
 
 
     ;; nieuwe client aan client manager toevoegen
     (define (voeg-nieuwe-client-toe)
-      (manager 'add-new-client (maak-nmbs manager) (spoor 'geef-trein-ids)))
+      (let ((trein-ids (spoor 'geef-trein-ids))
+            (switch-selections (GUI 'get-selections-switches)))
+        (displayln switch-selections)
+      (manager 'add-new-client (maak-nmbs manager) trein-ids switch-selections)))
 
 
     (define (verhoog-snelheid-trein! trein-id)
@@ -129,12 +136,14 @@
     (define (detectieblok-trein trein-id)
       (request-loco-detection-block trein-id out))
 
-    (define (verander-wisselstand! id stand)
-      (send-change-switch id stand out))                ;; ask INFRABEL to change switch status
+    (define (verander-wisselstand! selectie id stand)
+      (send-change-switch id stand out)                ;; ask INFRABEL to change switch status
+      (manager 'synchronize-switch-state client-id id selectie))
 
     (define (dispatch-nmbs msg . args)
       (cond ((eq? msg 'GUI) GUI)
             ((eq? msg 'spoor) spoor)
+            ((eq? msg 'client-id) client-id)
             ((eq? msg 'zet-trein-op-spoor!) (zet-trein-op-spoor! (car args) (cadr args) (caddr args)))
             ((eq? msg 'verhoog-snelheid-trein!) (verhoog-snelheid-trein! (car args)))
             ((eq? msg 'verlaag-snelheid-trein!) (verlaag-snelheid-trein! (car args)))
@@ -143,7 +152,7 @@
             ((eq? msg 'geef-wissel-ids) (geef-wissel-ids))
             ((eq? msg 'geef-aanwezige-treinen) (geef-aanwezige-treinen))
             ((eq? msg 'geef-detectieblok-ids) (geef-detectieblok-ids))
-            ((eq? msg 'verander-wisselstand!) (verander-wisselstand! (car args) (cadr args)))
+            ((eq? msg 'verander-wisselstand!) (verander-wisselstand! (car args) (cadr args) (caddr args)))
             ((eq? msg 'detectieblok-trein) (detectieblok-trein (car args)))
             ((eq? msg 'voeg-nieuwe-client-toe) (voeg-nieuwe-client-toe))
             (else (display "foute boodschap - NMBS"))))
