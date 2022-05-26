@@ -20,6 +20,9 @@
     (define (voeg-nieuwe-trein-toe! trein)
       ((aanwezige-treinen 'voeg-trein-toe!) trein))
 
+    (define (geef-trein-ids)
+      (map (lambda (el) (el 'trein-id))
+           (aanwezige-treinen 'reeks)))
 
     (define (set-wissel-ids! ids)
       (set! wissel-ids ids))
@@ -31,6 +34,7 @@
     (define (dispatch-spoornetwerk msg . args)
       (cond ((eq? msg 'wissel-ids) wissel-ids)
             ((eq? msg 'wissels) wissels)
+            ((eq? msg 'geef-trein-ids) (geef-trein-ids))
             ((eq? msg 'aanwezige-treinen) aanwezige-treinen)
             ((eq? msg 'detectieblok-ids) detectieblok-ids)
             ((eq? msg 'voeg-wissel-toe!) voeg-wissel-toe!)

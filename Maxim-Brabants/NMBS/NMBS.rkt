@@ -2,7 +2,6 @@
 
 (require "trein-adt.rkt")
 (require "spoornetwerk-adt.rkt")
-(require "client-manager.rkt")
 (require "../connection-API.rkt")
 (require "../GUI.rkt")
 
@@ -21,12 +20,12 @@
 
 (define SNELHEIDSVERANDERING 20)
 
-;; houdt alle nmbs-clients gesynchroniseerd
-(define client-manager (maak-client-manager))
+;; gedeeld spoornetwerk over alle clients
+(define spoor (maak-spoornetwerk))
 
-(define (maak-nmbs)
+(define (maak-nmbs manager)
   (let ((GUI #f)
-        (spoor (maak-spoornetwerk)))
+        (client-manager manager))
 
     ;; request railway components from INFRABEL
     (request-switch-ids out)
@@ -34,21 +33,18 @@
     
     (define (read-from-input-port)
       (let ((input (read in)))
-        (cond ((eq? (car input) 'switch-ids)                                                 ;; wissel-ids ontvangen + wissel panel tekenen
-               (spoor 'set-wissel-ids! (cdr input))
-               (GUI 'teken-wissel-panel)
-               (displayln (spoor 'wissel-ids)))
-              ((eq? (car input) 'detection-block-ids)                                        ;; detectieblok-ids ontvangen + detectieblok panel tekenen
-               (spoor 'set-detectieblok-ids! (cdr input))
-               (GUI 'teken-detectieblok-panel)
-               (displayln (spoor 'detectieblok-ids)))
+        (cond ((eq? (car input) 'switch-ids)                                                 ;; wissel-ids ontvangen
+               (spoor 'set-wissel-ids! (cdr input)))
+              ((eq? (car input) 'detection-block-ids)                                        ;; detectieblok-ids ontvangen
+               (spoor 'set-detectieblok-ids! (cdr input)))
               ((eq? (car input) 'draw-train)                                                 ;; nieuwe trein tekenen in panel
                (when (symbol? (cadr input))
                    (GUI 'teken-trein-in-panel (symbol->string (cadr input)))))
               ((eq? (car input) 'draw-train-speed)                                           ;; snelheid van trein tekenen
                (GUI 'teken-trein-snelheid (cadr input) (caddr input)))
               ((eq? (car input) 'draw-loco-block)                                            ;; status van detectieblok tekenen
-               (GUI 'teken-detectieblok-status (cadr input) (caddr input)))
+               (when GUI
+                 (GUI 'teken-detectieblok-status (cadr input) (caddr input))))
               (else (display "wrong-message")))
         (read-from-input-port)))
     (thread read-from-input-port)
@@ -87,7 +83,7 @@
 
     ;; nieuwe client aan client manager toevoegen
     (define (voeg-nieuwe-client-toe)
-      (client-manager 'add-new-client (maak-nmbs)))
+      (manager 'add-new-client (maak-nmbs manager) (spoor 'geef-trein-ids)))
 
 
     (define (verhoog-snelheid-trein! trein-id)
@@ -124,10 +120,6 @@
     (define (geef-aanwezige-treinen)
       (spoor 'aanwezige-treinen))
 
-    (define (geef-trein-ids)
-      (map (lambda (el) (el 'trein-id))
-           ((spoor 'aanwezige-treinen) 'reeks)))
-
     (define (geef-wissel-ids)
       (spoor 'wissel-ids))
 
@@ -141,22 +133,25 @@
       (send-change-switch id stand out))                ;; ask INFRABEL to change switch status
 
     (define (dispatch-nmbs msg . args)
-      (cond ((eq? msg 'zet-trein-op-spoor!) (zet-trein-op-spoor! (car args) (cadr args) (caddr args)))
+      (cond ((eq? msg 'GUI) GUI)
+            ((eq? msg 'spoor) spoor)
+            ((eq? msg 'zet-trein-op-spoor!) (zet-trein-op-spoor! (car args) (cadr args) (caddr args)))
             ((eq? msg 'verhoog-snelheid-trein!) (verhoog-snelheid-trein! (car args)))
             ((eq? msg 'verlaag-snelheid-trein!) (verlaag-snelheid-trein! (car args)))
             ((eq? msg 'geef-snelheid-trein) (geef-snelheid-trein (car args)))
             ((eq? msg 'bereken-traject) (bereken-traject (car args) (cadr args)))
             ((eq? msg 'geef-wissel-ids) (geef-wissel-ids))
             ((eq? msg 'geef-aanwezige-treinen) (geef-aanwezige-treinen))
-            ((eq? msg 'geef-trein-ids) (geef-trein-ids))
             ((eq? msg 'geef-detectieblok-ids) (geef-detectieblok-ids))
             ((eq? msg 'verander-wisselstand!) (verander-wisselstand! (car args) (cadr args)))
             ((eq? msg 'detectieblok-trein) (detectieblok-trein (car args)))
             ((eq? msg 'voeg-nieuwe-client-toe) (voeg-nieuwe-client-toe))
             (else (display "foute boodschap - NMBS"))))
 
+    
     (set! GUI (maak-gui dispatch-nmbs))
     (GUI 'start)
-    (thread (GUI 'refresh-detection-blocks))
+    (GUI 'teken-wissel-panel)
+    (GUI 'teken-detectieblok-panel)
     
     dispatch-nmbs))

@@ -21,8 +21,9 @@
 (define SNELHEIDSVERANDERING 20)
 
 
-(define (maak-nmbs)
+(define (maak-nmbs manager)
   (let ((GUI #f)
+        (client-manager manager)
         (spoor (maak-spoornetwerk)))
 
     ;; request railway components from INFRABEL
@@ -78,9 +79,9 @@
             (send-train-message id-symbol richting-symbol segment-symbol out))))           ;; gegevens voor nieuwe trein doorsturen naar infrabel
 
 
-    ;; nieuwe client aan client manager laten toevoegen door infrabel
+    ;; nieuwe client aan client manager toevoegen
     (define (voeg-nieuwe-client-toe)
-      (send-new-client (maak-nmbs) out))
+      (manager 'add-new-client (maak-nmbs)))
 
 
     (define (verhoog-snelheid-trein! trein-id)
@@ -151,7 +152,9 @@
     (set! GUI (maak-gui dispatch-nmbs))
 
     (GUI 'start)
+    (displayln (spoor 'wissel-ids))
     (GUI 'teken-wissel-panel)
+    (displayln (spoor 'detectieblok-ids))
     (GUI 'teken-detectieblok-panel)
     
     (thread (GUI 'refresh-detection-blocks))
