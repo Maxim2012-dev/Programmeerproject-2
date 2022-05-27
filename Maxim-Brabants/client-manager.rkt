@@ -42,7 +42,6 @@
 
     ;; verandering van treinsnelheid synchroniseren met alle clients
     (define (synchronize-change-speed client-id train-id speed)
-      (display "Client-id changer: ")(displayln client-id)
       (let client-iter
         ((clients active-clients))
         (when (not (null? clients))
