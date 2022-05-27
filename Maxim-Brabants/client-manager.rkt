@@ -26,27 +26,28 @@
     (define (synchronize-new-train client-id train-id)
       (let client-iter
         ((clients active-clients))
-        (when (and (not (null? clients))
-                   (not (= client-id ((car clients) 'client-id))))
-          (((car clients) 'GUI) 'teken-trein-in-panel (symbol->string train-id))
+        (when (not (null? clients))
+          (when (not (= client-id ((car clients) 'client-id)))
+            (((car clients) 'GUI) 'teken-trein-in-panel (symbol->string train-id)))
           (client-iter (cdr clients)))))
 
     ;; verandering van wisselstand synchroniseren met alle clients
     (define (synchronize-switch-state client-id switch-id selection)
       (let client-iter
         ((clients active-clients))
-        (when (and (not (null? clients))
-                   (not (= client-id ((car clients) 'client-id))))
-          (((car clients) 'GUI) 'teken-wissel-status switch-id selection)
+        (when (not (null? clients))
+          (when (not (= client-id ((car clients) 'client-id)))
+            (((car clients) 'GUI) 'teken-wissel-status switch-id selection))
           (client-iter (cdr clients)))))
 
-    ;; verandering van wisselstand synchroniseren met alle clients
+    ;; verandering van treinsnelheid synchroniseren met alle clients
     (define (synchronize-change-speed client-id train-id speed)
+      (display "Client-id changer: ")(displayln client-id)
       (let client-iter
         ((clients active-clients))
-        (when (and (not (null? clients))
-                   (not (= client-id ((car clients) 'client-id))))
-          (((car clients) 'GUI) 'teken-trein-snelheid train-id (number->string speed))
+        (when (not (null? clients))
+          (when (not (= client-id ((car clients) 'client-id)))
+            (((car clients) 'GUI) 'teken-trein-snelheid train-id (number->string speed)))
           (client-iter (cdr clients)))))
           
     

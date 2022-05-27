@@ -103,7 +103,7 @@
     (define (verlaag-snelheid-trein! trein-id)
       (let* ((id-symbol (string->symbol trein-id)))
         (send-change-train-speed id-symbol '- out)
-        ((spoor 'aanwezige-treinen) 'wijzig-snelheid-trein! trein-id '-)
+        ((spoor 'aanwezige-treinen) 'wijzig-snelheid-trein! id-symbol '-)
         (let ((train-speed ((spoor 'aanwezige-treinen) 'geef-treinsnelheid id-symbol)))
           (manager 'synchronize-change-speed client-id id-symbol train-speed))))                      ;; snelheid grafisch synchroniseren met alle clients
 

@@ -47,8 +47,7 @@
              (when loco-block
                (send-draw-loco-block (cadr input) loco-block out))))
           ((eq? (car input) 'change-speed)                                                      ;; changes speed of a train
-           (dispatch-change-speed (cadr input) (caddr input))
-           (send-draw-train-speed (cadr input) (geef-snelheid-trein (cadr input)) out))
+           (dispatch-change-speed (cadr input) (caddr input)))
           (else (display "wrong-message")))
     (read-from-input-port)))
 (thread read-from-input-port)                        ;; keeps reading the input port
@@ -69,12 +68,14 @@
 (define (verhoog-snelheid-trein! trein-id)
   (let* ((aanwezige-treinen (spoor 'aanwezige-treinen))
          (treinsnelheid ((aanwezige-treinen 'snelheid-trein) trein-id)))
-    ((aanwezige-treinen 'wijzig-snelheid-trein!) trein-id (+ treinsnelheid SNELHEIDSVERANDERING))))
+    ((aanwezige-treinen 'wijzig-snelheid-trein!) trein-id (+ treinsnelheid SNELHEIDSVERANDERING))
+    (send-draw-train-speed trein-id (geef-snelheid-trein trein-id) out)))
 
 (define (verlaag-snelheid-trein! trein-id)
   (let* ((aanwezige-treinen (spoor 'aanwezige-treinen))
          (treinsnelheid ((aanwezige-treinen 'snelheid-trein) trein-id)))
-    ((aanwezige-treinen 'wijzig-snelheid-trein!) trein-id (- treinsnelheid SNELHEIDSVERANDERING))))
+    ((aanwezige-treinen 'wijzig-snelheid-trein!) trein-id (- treinsnelheid SNELHEIDSVERANDERING))
+    (send-draw-train-speed trein-id (geef-snelheid-trein trein-id) out)))
 
 
 (define (geef-snelheid-trein trein-id)
