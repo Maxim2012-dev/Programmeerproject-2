@@ -88,20 +88,24 @@
     ;; nieuwe client aan client manager toevoegen
     (define (voeg-nieuwe-client-toe)
       (let ((trein-ids (spoor 'geef-trein-ids))
-            (switch-selections (GUI 'get-selections-switches)))
-        (displayln switch-selections)
-      (manager 'add-new-client (maak-nmbs manager) trein-ids switch-selections)))
+            (switch-selections (GUI 'get-selections-switches))
+            (trein-snelheden (spoor 'geef-trein-snelheden)))
+        (manager 'add-new-client (maak-nmbs manager) trein-ids switch-selections trein-snelheden)))
 
 
     (define (verhoog-snelheid-trein! trein-id)
       (let* ((id-symbol (string->symbol trein-id)))
         (send-change-train-speed id-symbol '+ out)
-        ((spoor 'aanwezige-treinen) 'wijzig-snelheid-trein! trein-id '+)))
+        ((spoor 'aanwezige-treinen) 'wijzig-snelheid-trein! id-symbol '+)
+        (let ((train-speed ((spoor 'aanwezige-treinen) 'geef-treinsnelheid id-symbol)))
+          (manager 'synchronize-change-speed client-id id-symbol train-speed))))                      ;; snelheid grafisch synchroniseren met alle clients
 
     (define (verlaag-snelheid-trein! trein-id)
       (let* ((id-symbol (string->symbol trein-id)))
         (send-change-train-speed id-symbol '- out)
-        ((spoor 'aanwezige-treinen) 'wijzig-snelheid-trein! trein-id '-)))
+        ((spoor 'aanwezige-treinen) 'wijzig-snelheid-trein! trein-id '-)
+        (let ((train-speed ((spoor 'aanwezige-treinen) 'geef-treinsnelheid id-symbol)))
+          (manager 'synchronize-change-speed client-id id-symbol train-speed))))                      ;; snelheid grafisch synchroniseren met alle clients
 
 
     (define (geef-snelheid-trein trein-id)

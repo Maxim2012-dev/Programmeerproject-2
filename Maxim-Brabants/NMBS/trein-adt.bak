@@ -21,7 +21,7 @@
       (cond ((eq? action '+)
              (set! snelheid (+ snelheid SNELHEIDSVERANDERING)))
             ((eq? action '-)
-             (set! snelheid (- snelheid SNELHEIDSVERANDERING)))
+             (set! snelheid (+ snelheid SNELHEIDSVERANDERING)))
             (else (display "wrong-action-trein-adt"))))
 
     ; dispatch-procedure
@@ -29,7 +29,6 @@
       (cond ((eq? msg 'trein-id) trein-id)
             ((eq? msg 'richting) prev-seg)
             ((eq? msg 'startsegment) startsegment)
-            ((eq? msg 'snelheid) snelheid)
             ((eq? msg 'huidige-snelheid) huidige-snelheid)
             ((eq? msg 'verander-snelheid!) (verander-snelheid! (car args)))
             (else (display "foute boodschap - trein-adt"))))

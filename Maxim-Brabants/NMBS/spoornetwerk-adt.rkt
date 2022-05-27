@@ -24,6 +24,10 @@
       (map (lambda (el) (el 'trein-id))
            (aanwezige-treinen 'reeks)))
 
+    (define (geef-trein-snelheden)
+      (map (lambda (el) (el 'snelheid))
+           (aanwezige-treinen 'reeks)))
+
     (define (set-wissel-ids! ids)
       (set! wissel-ids ids))
 
@@ -35,6 +39,7 @@
       (cond ((eq? msg 'wissel-ids) wissel-ids)
             ((eq? msg 'wissels) wissels)
             ((eq? msg 'geef-trein-ids) (geef-trein-ids))
+            ((eq? msg 'geef-trein-snelheden) (geef-trein-snelheden))
             ((eq? msg 'aanwezige-treinen) aanwezige-treinen)
             ((eq? msg 'detectieblok-ids) detectieblok-ids)
             ((eq? msg 'voeg-wissel-toe!) voeg-wissel-toe!)
