@@ -48,6 +48,8 @@
                (send-draw-loco-block (cadr input) loco-block out))))
           ((eq? (car input) 'change-speed)                                                      ;; changes speed of a train
            (dispatch-change-speed (cadr input) (caddr input)))
+          ((eq? (car input) 'formation)                                                         ;; nieuwe opstelling krijgen van NMBS
+           (displayln (cadr input)))
           (else (display "wrong-message")))
     (read-from-input-port)))
 (thread read-from-input-port)                        ;; keeps reading the input port

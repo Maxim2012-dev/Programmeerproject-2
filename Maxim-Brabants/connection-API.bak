@@ -7,7 +7,6 @@
          send-train-message
          send-change-switch
          send-change-train-speed
-         send-formation
          send-switch-ids
          send-detection-block-ids
          send-draw-train
@@ -60,10 +59,6 @@
     (write (list 'change-speed id action) out)
     (flush-output out)))
 
-(define (send-formation formation out)
-  (when (list? formation)
-    (write (list 'formation formation) out)
-    (flush-output out)))
 
 
 ;;; Operations intented for NMBS

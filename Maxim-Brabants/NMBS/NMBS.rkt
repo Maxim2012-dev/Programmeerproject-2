@@ -2,6 +2,7 @@
 
 (require "trein-adt.rkt")
 (require "spoornetwerk-adt.rkt")
+(require "../opstelling-parser.rkt")
 (require "../connection-API.rkt")
 (require "../GUI.rkt")
 
@@ -92,6 +93,11 @@
             (trein-snelheden (spoor 'geef-trein-snelheden)))
         (manager 'add-new-client (maak-nmbs manager) trein-ids switch-selections trein-snelheden)))
 
+    ;; opstelling-parser oproepen om opstelling uit te lezen
+    (define (lees-opstelling-uit tekstbestand)
+      (let ((formation (start-parser tekstbestand)))
+        (send-formation formation out)))
+
 
     (define (verhoog-snelheid-trein! trein-id)
       (let* ((id-symbol (string->symbol trein-id)))
@@ -159,6 +165,7 @@
             ((eq? msg 'verander-wisselstand!) (verander-wisselstand! (car args) (cadr args) (caddr args)))
             ((eq? msg 'detectieblok-trein) (detectieblok-trein (car args)))
             ((eq? msg 'voeg-nieuwe-client-toe) (voeg-nieuwe-client-toe))
+            ((eq? msg 'lees-opstelling-uit) (lees-opstelling-uit (car args)))
             (else (display "foute boodschap - NMBS"))))
 
     

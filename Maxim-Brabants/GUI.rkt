@@ -1,7 +1,6 @@
 #lang racket
 
 (require racket/gui/base)
-(require "opstelling-parser.rkt")
 
 (provide maak-gui)
 
@@ -285,7 +284,7 @@
 
     (define custom-formation (new text-field% [parent choose-formation-dialog] [label CUSTOM_FORMATION]))
     (define confirm (new button% [parent choose-formation-dialog] [label "Bevestig"]
-                         [callback (lambda (b e) (start-parser (send custom-formation get-value)))]))
+                         [callback (lambda (b e) (nmbs 'lees-opstelling-uit (send custom-formation get-value)))]))
 
     ;; ======================= TAB LAYOUTS =======================
 
