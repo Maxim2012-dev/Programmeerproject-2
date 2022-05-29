@@ -56,6 +56,26 @@
 ;;      RAILWAY      ;;
 ;; ***************** ;;
 
+;; converts a list with symbols to a list with piko track types
+(define (convert-symbols list)
+  (map (lambda (el)
+         (cond ((eq? el 'G62) G62)
+               ((eq? el 'G119) G119)
+               ((eq? el 'G231) G231)
+               ((eq? el 'G239) G239)
+               ((eq? el 'R2) R2)
+               ((eq? el 'R2-7.5) R2-7.5)
+               ((eq? el 'R3) R3)
+               ((eq? el 'R9) R9)
+               ((eq? el 'WR) WR)
+               ((eq? el 'WL) WL)
+               ((eq? el 'BWR) BWR)
+               ((eq? el 'BWL) BWL)
+               ((eq? el 'W3) W3)
+               ((eq? el 'DKWR) DKWR)
+               (else (displayln "wrong-piko-track-type"))))
+       list))
+
 (define railway%
   (class object%
     (super-new)
@@ -114,28 +134,29 @@
   
   (for ([i components]
         [j piko-tracks])
+    (displayln i) (displayln j)
     (let ((str (symbol->string i)))
-      (cond ((eq? (string-ref str 0) 'D)
-             (define track (make-object block% i j))
+      (cond ((eq? (string-ref str 0) #\D)
+             (define track (make-object block% i (convert-symbols j)))
              (set! assoc-list (cons (cons i track) assoc-list))
              (set! SEGMENTS (cons track SEGMENTS))
              (set! DETECTION-BLOCKS (cons track DETECTION-BLOCKS)))
-            ((eq? (string-ref str 0) 'S)
-             (define track (make-object switch% i j))
+            ((eq? (string-ref str 0) #\S)
+             (define track (make-object switch% i (convert-symbols j)))
              (set! assoc-list (cons (cons i track) assoc-list))
              (set! SWITCHES (cons track SWITCHES)))
-            (else (define track (make-object block% i j))
+            (else (define track (make-object block% i (convert-symbols j)))
                   (set! SEGMENTS (cons track SEGMENTS))))))
 
   (for ([i connections])
     (let ((first (assoc (caar connections) assoc-list))
-          (second (assoc (cadar connections) assoc-list)))
+          (second (assoc (cdar connections) assoc-list)))
       ;; eerste stuk
-      (cond ((eq? (string-ref (symbol->string (car first)) 0) 'S)
-             (if (eq? (string-ref (symbol->string (car second)) 0) 'S)
+      (cond ((eq? (string-ref (symbol->string (car first)) 0) #\S)
+             (if (eq? (string-ref (symbol->string (car second)) 0) #\S)
                  (connect (end (cdr first) 1) (end (cdr second) 0))
                  (connect (end (cdr first) 0) (start (cdr second)))))
-            (else (if (eq? (string-ref (symbol->string (car second)) 0) 'S)
+            (else (if (eq? (string-ref (symbol->string (car second)) 0) #\S)
                       (connect (end (cdr first)) (end (cdr second) 0))
                       (connect (end (cdr first)) (end (cdr second))))))))
           
@@ -144,7 +165,8 @@
               (send block set-color 'blue))
             DETECTION-BLOCKS)
   
-  (set! RAILWAY (make-object railway% SEGMENTS SWITCHES DETECTION-BLOCKS)))
+  (set! RAILWAY (make-object railway% SEGMENTS SWITCHES DETECTION-BLOCKS))
+  (displayln "success"))
   
 
 ;; ************************ ;;

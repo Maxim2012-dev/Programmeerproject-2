@@ -1,6 +1,8 @@
 #lang racket
 
 (require "../simulator/interface.rkt")
+(require "../simulator/railway.rkt")
+(require "../simulator/simulator.rkt")
 (require "../connection-API.rkt")
 (require "trein-adt.rkt")
 (require "treinreeks-adt.rkt")
@@ -49,7 +51,7 @@
           ((eq? (car input) 'change-speed)                                                      ;; changes speed of a train
            (dispatch-change-speed (cadr input) (caddr input)))
           ((eq? (car input) 'formation)                                                         ;; nieuwe opstelling krijgen van NMBS
-           (displayln (cadr input)))
+           (initialize-formation (cadr input)))
           (else (display "wrong-message")))
     (read-from-input-port)))
 (thread read-from-input-port)                        ;; keeps reading the input port
@@ -61,6 +63,13 @@
     ((spoor 'voeg-nieuwe-trein-toe!)
      (maak-trein id richting segment))
     (send-draw-train id out)))
+
+;; simulator aanroepen om de opstelling te initialiseren
+(define (initialize-formation formation)
+  (displayln formation)
+  (stop)
+  (load-custom-setup (car formation) (cadr formation) (caddr formation))
+  (start))
 
 (define (dispatch-change-speed id action)
   (cond ((eq? action '+) (verhoog-snelheid-trein! id))
