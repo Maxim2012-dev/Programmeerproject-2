@@ -215,8 +215,8 @@
     (define auto-route-dialog (new dialog%	 
                                    [label AUTOMATIC_ROUTE]
                                    [parent window]
-                                   [width 400]	 
-                                   [height 300]))
+                                   [width 300]	 
+                                   [height 250]))
 
     (define train-list (new list-box%
                             [label "Trein: "]
