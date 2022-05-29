@@ -125,6 +125,7 @@
 ;; ************************ ;;
 
 (define (load-custom-setup components connections piko-tracks)
+  (remove-all-tracks)
   (define SEGMENTS '())
   (define SWITCHES '())
   (define DETECTION-BLOCKS '())
@@ -136,7 +137,6 @@
     (displayln i) (displayln j)
     (let ((str (symbol->string i)))
       (cond ((eq? (string-ref str 0) #\D)
-             (displayln (convert-symbols j))
              (define track (make-object block% i (convert-symbols j)))
              (set! assoc-list (cons (cons i track) assoc-list))
              (set! SEGMENTS (cons track SEGMENTS))
@@ -165,7 +165,7 @@
               (send block set-color 'blue))
             DETECTION-BLOCKS)
   
-  (set! RAILWAY (make-object railway% (reverse SEGMENTS) (reverse SWITCHES)(reverse DETECTION-BLOCKS)))
+  (set! RAILWAY (make-object railway% SEGMENTS SWITCHES DETECTION-BLOCKS))
   (displayln "success"))
   
 

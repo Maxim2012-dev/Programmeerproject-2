@@ -4,6 +4,7 @@
 (require "../simulator/railway.rkt")
 (require "../simulator/simulator.rkt")
 (require "../connection-API.rkt")
+(require "../opstelling-parser.rkt")
 (require "trein-adt.rkt")
 (require "treinreeks-adt.rkt")
 (require "wissel-adt.rkt")
@@ -16,7 +17,8 @@
 ;; ========================  INFRABEL  ==========================
 ;; ==============================================================
 
-
+;(define list (start-parser "straight"))
+;(load-custom-setup (car list) (cadr list) (caddr list))
 (setup-loop-and-switches)
 (start)
 
@@ -28,7 +30,7 @@
     (displayln "INFRABEL successfully connected to client!")
     (displayln "Connection failed."))
 
-;; Spoor + Client Manager
+;; Spoor
 (define spoor (maak-spoornetwerk))
 
 ;; proces dat van de input port blijft lezen
