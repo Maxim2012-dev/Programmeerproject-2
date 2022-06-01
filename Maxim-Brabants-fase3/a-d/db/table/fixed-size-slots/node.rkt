@@ -122,13 +122,9 @@
       (offs (calc-record-offset node slot)))
      (if (= cntr (scma:nr-of-attributes scma))
        ()
-       (begin (display ((vector-ref decoders (scma:type scma cntr)) 
-                        blck offs (scma:size scma cntr)))
-              (display " ")
-
-              (cons ((vector-ref decoders (scma:type scma cntr)) 
-                     blck offs (scma:size scma cntr))
-                    (loop (+ cntr 1) (+ offs (scma:size scma cntr))))))))
+       (cons ((vector-ref decoders (scma:type scma cntr)) 
+              blck offs (scma:size scma cntr))
+             (loop (+ cntr 1) (+ offs (scma:size scma cntr)))))))
  
  (define (occupy-slot! node slot)
    (define bits (occupancy-bits node))
