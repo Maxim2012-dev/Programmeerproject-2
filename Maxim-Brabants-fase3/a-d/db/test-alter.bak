@@ -1,0 +1,12 @@
+#lang r6rs
+
+
+(import (prefix (a-d disk disk) disk:)
+        (a-d file constants)
+        (srfi :9)
+        (prefix (a-d disk file-system) fs:)
+        (prefix (a-d db rcid) rcid:)
+        (prefix (a-d db table fixed-size-slots table) tbl:)
+        (prefix (a-d db table fixed-size-slots schema) scma:)
+        (prefix (a-d db index b-tree b-tree) btree:)
+        (rnrs base))
