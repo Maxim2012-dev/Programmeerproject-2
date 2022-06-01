@@ -1,0 +1,43 @@
+#lang r6rs
+
+;-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-
+;-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-
+;-*-*                                                                 *-*-
+;-*-*                         Hashing Test                            *-*-
+;-*-*                                                                 *-*-
+;-*-*                       Wolfgang De Meuter                        *-*-
+;-*-*                 2008 Programming Technology Lab                 *-*-
+;-*-*                   Vrije Universiteit Brussel                    *-*-
+;-*-*                                                                 *-*-
+;-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-
+;-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-
+
+(import (rnrs base)
+        (rnrs io simple)
+        (rnrs mutable-pairs)
+        ;(a-d tests-and-unittests hashing-test-external-chaining))
+        ;(a-d tests-and-unittests hashing-test-linear-rehashing))
+        ;(a-d tests-and-unittests hashing-test-linear-rehashing2))
+        (a-d tests-and-unittests hashing-test-quadratic-rehashing))
+        ;(a-d tests-and-unittests hashing-test-double-rehashing))
+
+(insert! table  4371 "value1")
+(insert! table  1323 "value2")
+(insert! table  6173 "value3")
+(insert! table  4199 "value4")
+(insert! table  4344 "value5")
+(insert! table  9679 "value6")
+(insert! table  1989 "value7")
+(insert! table  9579 "value8")
+(insert! table  1489 "value9")
+(find table  1989)
+(find table  4199)
+(find table  1323)
+;(delete! table  4371)
+(delete! table  1323)
+(delete! table  6173)
+(delete! table  4199)
+(delete! table  4344)
+(delete! table  9679)
+(delete! table  1989)
+(display (find table 4371))

@@ -1,0 +1,50 @@
+#lang r6rs
+
+;-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-
+;-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-
+;-*-*                                                                 *-*-
+;-*-*                        Dictionaries Test                        *-*-
+;-*-*                                                                 *-*-
+;-*-*                       Wolfgang De Meuter                        *-*-
+;-*-*                 2008 Programming Technology Lab                 *-*-
+;-*-*                   Vrije Universiteit Brussel                    *-*-
+;-*-*                                                                 *-*-
+;-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-
+;-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-
+
+(import (rnrs base)
+        (rnrs io simple)
+        ;(a-d dictionary ordered avl))
+        (a-d dictionary ordered bst))
+        ;(a-d dictionary ordered sorted-list))
+
+(define english-dutch (new string=? string<?))
+(if (not (empty? english-dutch))
+  (error "Should be empty" english-dutch))
+(if (full? english-dutch)
+  (error "Cannot be full" english-dutch))
+(insert! (insert! english-dutch "algorithm" "algoritme") "ADT" "Abstract Data Type")
+(insert! english-dutch "key" "sleutel")
+(insert! english-dutch "value" "waarde")
+(insert! english-dutch "accessor" "uitlezer")
+(insert! english-dutch "mutator" "overschrijver")
+(insert! english-dutch "operation" "operatie")
+(if (full? english-dutch)
+  (error "Should not be full!" english-dutch))
+
+(delete! english-dutch "mutator")
+(if (not (find english-dutch "algorithm"))
+  (error "Lost a key!" english-dutch))
+(if (not (find english-dutch "ADT"))
+  (error "Lost a key!" english-dutch))
+(if (find english-dutch "mutator")
+  (error "It is still there!" english-dutch))
+(delete! english-dutch "algorithm")
+(delete! english-dutch "ADT")
+(delete! english-dutch "key")
+(delete! english-dutch "value")
+(delete! english-dutch "accessor")
+(delete! english-dutch "operation")
+(if (not (empty? english-dutch))
+  (error "Should be empty" english-dutch))
+(display english-dutch)
