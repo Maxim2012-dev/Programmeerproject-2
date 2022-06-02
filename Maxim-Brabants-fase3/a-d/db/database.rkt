@@ -183,6 +183,7 @@
           (cons (car list) (removeFromList (cdr list) (- idx 1))))))
  
  (define (alter-table-drop-column! database table attribute)
+   (define indx ())
    (let* ((dsk (tbl:disk table))
           (atts-list (scma:atts (tbl:schema table)))
           (old-scma (scma:new dsk atts-list)))
@@ -191,7 +192,15 @@
    (for-all-tuples table (lambda (tple rcid)
                            (let ((new-tuple (removeFromList tple attribute)))
                              (tbl:replace! table rcid new-tuple))))
-   (tbl:old-scma! table (tbl:schema table)))                       ;; set the old schema to the new one
+   (tbl:old-scma! table (tbl:schema table))                       ;; set the old schema to the new one
+   (for-all-indices database table (lambda (idx att)                   ;; try to find an index on 'attribute'
+                                     (when (= att attribute)
+                                       (set! indx idx)
+                                       #f)))
+   (when (not (null? indx))                                       ;; index found
+     (delete-from-index-table database indx)
+     (btree:delete! indx)))
+   
 
  ;; ==============================================================================================
 
@@ -244,6 +253,24 @@
          (tbl:close! tble)
          (delete-from-indexes dbse tble eqls tple rcid))
        (loop (find-tuple-rcid dbse tble eqls attr valu)))))
+
+;; ==============================================================================================
+
+ ;; delete an index from the meta table of indexes
+ (define (delete-from-index-table dbse indx)
+   (define name  (btree:name indx))
+   (define indxs (indexes dbse))
+   (tbl:set-current-to-first! (tbl:schema indxs) indxs)
+   (let find-index
+     ((tuple (tbl:peek (tbl:schema indxs) indxs)))
+     (let ((tble-name (cadr tuple)))
+       (cond ((string=? tble-name name)
+              (tbl:delete! indxs (tbl:current indxs)))
+             ((not (eq? (tbl:set-current-to-next! (tbl:schema indxs) indxs) no-current))
+              (find-index (tbl:peek (tbl:schema indxs) indxs)))
+             (else not-found)))))
+
+;; ==============================================================================================
  
  (define (delete-from-meta-table dbse tabl)
    (define name (tbl:name tabl))

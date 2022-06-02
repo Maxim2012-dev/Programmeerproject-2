@@ -48,10 +48,11 @@
 (define :omlooptijd:      4)
 (define :rotatietijd:     5)
 
+;; Create table + index
 (define planeten (db:create-table database "Planeten" planetenschema))
+(db:create-index! database planeten "Middellijn-zoeker" :middellijn:)
 
 
-(display "start insertion")(newline)
 ;; Population of database
 (db:insert-into-table! database planeten 
                        (list "Mercurius" 0.3871   0.053   4840   0.241  +58.79))
@@ -71,7 +72,6 @@
                        (list "Neptunus" 30.0578  17.500  44800 164.793   +0.63))
 (db:insert-into-table! database planeten 
                        (list "Pluto"    39.2975   1.000   5000 248.430   +0.26))
-(display "stop insertion")(newline)(newline)
 
 
 ;; ============================ Test 1 ============================
@@ -79,6 +79,7 @@
 (display "Deletion of :middellijn: ----> index: 3")(newline)
 (display "=================================================")(newline)
 (db:alter-table-drop-column! database planeten :middellijn:)
-(tbl:print planeten)
+;(tbl:print planeten)
+(db:print database)
 (newline)(newline)(newline)
 
