@@ -198,8 +198,8 @@
                                        (set! indx idx)
                                        #f)))
    (when (not (null? indx))                                       ;; index found
-     (delete-from-index-table database indx)
-     (btree:delete! indx)))
+     (delete-from-index-table database indx)                      ;; delete index from meta table
+     (btree:delete! indx)))                                       ;; delete index from disk
    
 
  ;; ==============================================================================================

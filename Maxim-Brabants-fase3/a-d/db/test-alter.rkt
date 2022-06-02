@@ -79,7 +79,8 @@
 (display "Deletion of :middellijn: ----> index: 3")(newline)
 (display "=================================================")(newline)
 (db:alter-table-drop-column! database planeten :middellijn:)
-;(tbl:print planeten)
-(db:print database)
+(db:alter-table-drop-column! database planeten :aard-massa:)
+(tbl:print planeten)
+;(db:print database)
 (newline)(newline)(newline)
 
