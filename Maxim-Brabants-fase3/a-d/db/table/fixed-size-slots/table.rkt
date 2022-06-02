@@ -160,7 +160,7 @@
                       new)
                     (node:read scma room)))
    (define free (find-free-slot node -1))
-   (node:record! node free tupl)
+   (node:record! scma node free tupl)
    (when (node:all-occupied? node)
      (extract-node! tble part part! node)
      (insert-full!  tble node))
@@ -175,7 +175,11 @@
  (define (replace! tble rcid tupl)
    (define scma (schema tble))
    (define node (node:read scma (rcid:bptr rcid)))
-   (node:record! node (rcid:slot rcid) tupl))
+   (node:clear-slot! node (rcid:slot rcid))                       ;; clear the slot first
+   (node:record! scma node (rcid:slot rcid) tupl)
+   (node:write! node)
+   (buffer!      tble node)
+   (slot!        tble (rcid:slot rcid)))
 
 ;; ========================================================
 
@@ -223,7 +227,7 @@
             )
            ((node:slot-occupied? node idx)
             (display "    |")
-            (display (node:record node idx)) (newline)
+            (display (node:record scma node idx)) (newline)
             (print-node node (+ idx 1)))
            (else
             (display "    |<< empty slot >>")(newline)

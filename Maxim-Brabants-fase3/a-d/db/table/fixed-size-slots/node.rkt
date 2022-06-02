@@ -91,18 +91,16 @@
  (define (position node)
    (disk:position (block node)))
  
- (define (calc-record-offset node slot)
-   (define scma (schema node))
+ (define (calc-record-offset scma node slot)
    (define skip (+ scma:fixed-header-size (scma:nr-of-occupancy-bytes scma)))
    (define rsiz (scma:record-size scma))
    (+ skip (* rsiz slot)))
  
- (define (record! node slot tupl)
-   (define scma (schema node))
+ (define (record! scma node slot tupl)
    (define blck (block node))
    (let loop
      ((cntr 0)
-      (offs (calc-record-offset node slot))
+      (offs (calc-record-offset scma node slot))
       (vals tupl))
      (cond ((null? vals)
             (if (< cntr (scma:nr-of-attributes scma))
@@ -119,16 +117,12 @@
    (define blck (block node))
    (let loop
      ((cntr 0)
-      (offs (calc-record-offset node slot)))
+      (offs (calc-record-offset scma node slot)))
      (if (= cntr (scma:nr-of-attributes scma))
        ()
-       (begin (display ((vector-ref decoders (scma:type scma cntr)) 
-                        blck offs (scma:size scma cntr)))
-              (display " ")
-
-              (cons ((vector-ref decoders (scma:type scma cntr)) 
-                     blck offs (scma:size scma cntr))
-                    (loop (+ cntr 1) (+ offs (scma:size scma cntr))))))))
+       (cons ((vector-ref decoders (scma:type scma cntr)) 
+              blck offs (scma:size scma cntr))
+             (loop (+ cntr 1) (+ offs (scma:size scma cntr)))))))
  
  (define (occupy-slot! node slot)
    (define bits (occupancy-bits node))

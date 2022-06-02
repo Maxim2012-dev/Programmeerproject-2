@@ -141,7 +141,6 @@
    (record-size!      scma rsz)
    (nr-of-attributes! scma nr-attributes)
    (delete-att!       scma indx)
-   (display "new schema: ")(display (atts scma))(newline)
    (types/sizes!      scma (atts scma))
    (disk:write-block! (block scma)))
 
