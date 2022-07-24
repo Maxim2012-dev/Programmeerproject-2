@@ -19,7 +19,7 @@
 
 ;(define list (start-parser "straight"))
 ;(load-custom-setup (car list) (cadr list) (caddr list))
-(setup-hardware)
+(setup-loop-and-switches)
 (start)
 
 ;; ==================== TCP SETUP (server) ======================
